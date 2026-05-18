@@ -28,7 +28,13 @@ Requires `jq`, `git`, and `gh` >= 2.46.0 on PATH. `gh` is optional for the branc
 
 ## Configure
 
-Drop a `.merge-agent.json` at your repo root. Minimum (5 tokens):
+The fastest path: run `/cma:init` inside your project and let cma write the starter files. It detects Node, Python, or shell stacks and drops a working config + a ratchet script tailored to that stack.
+
+```
+/cma:init
+```
+
+Or — for full control — drop a `.merge-agent.json` at your repo root by hand. Minimum (5 tokens):
 
 ```json
 { "gate": { "command": "npm test" } }
@@ -119,8 +125,11 @@ See [`examples/github-actions/`](./examples/github-actions/) for a working GHA t
 | **v0.2.0** | BATS test suite (42 tests, Mac + Ubuntu CI matrix). Shellcheck + ratchet gate. Single-concern commit-msg hook. | ✅ Shipped |
 | **v0.2.1** | GHMQ submit-mode (`merge.mode: "merge-queue"`). `gh` ≥ 2.46 preflight. Ratchet relock intentionally skipped in queue mode. | ✅ Shipped |
 | **v0.3.0** | Web dashboard (Vite + React + shadcn/ui). `/cma:dashboard` slash command. Live GitHub data via Octokit + sessionStorage PAT. Hosted at cma-dashboard-eight.vercel.app. | ✅ Shipped |
-| **v0.4** | Remote gate runner (`runOn: "ssh"` + `"gcloud-iap"`). | 📋 Planned |
-| **v0.5** | Long-lived queue subagent (waiting on Claude Code durable cross-session messaging). | ⏸️ Parked |
+| **v0.3.1** | Repo picker on the dashboard setup screen (searchable, Recent/Owned/Org tabs). No more URL-bar editing. | ✅ Shipped |
+| **v0.4.0** | `/cma:init` bootstraps gate + ratchet (+ optional GHA) into Node, Python, and shell projects. | ✅ Shipped |
+| **v0.4.x** | Rust, Go, Ruby `/cma:init` templates as point releases. | 📋 Planned |
+| **v0.5** | Remote gate runner (`runOn: "ssh"` + `"gcloud-iap"`). | 📋 Planned |
+| **v0.6** | Long-lived queue subagent (waiting on Claude Code durable cross-session messaging). | ⏸️ Parked |
 
 ## Kill switch
 
