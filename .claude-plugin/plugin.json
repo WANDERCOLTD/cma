@@ -1,0 +1,11 @@
+{
+  "name": "merge-agent",
+  "version": "0.1.0",
+  "description": "Serialised merge-to-main with a project-configurable canonical gate. Pairs with GitHub Merge Queue.",
+  "author": "WANDERCOLTD",
+  "license": "MIT",
+  "homepage": "https://github.com/WANDERCOLTD/claude-merge-agent",
+  "keywords": ["merge", "git", "ci", "gate", "ratchet", "parallel", "worktree"],
+  "commands": "commands/",
+  "hooks": "hooks/hooks.json"
+}

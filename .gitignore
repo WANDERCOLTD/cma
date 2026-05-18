@@ -1,0 +1,7 @@
+.DS_Store
+*.swp
+*.log
+.merge-agent.lock/
+node_modules/
+.idea/
+.vscode/
