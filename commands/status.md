@@ -1,9 +1,9 @@
 ---
-name: merge:status
+name: status
 description: Show current merge lock state, recent merge log, and config summary for this repo.
 ---
 
-# /merge:status
+# /cma:status
 
 Inspect the merge-agent state for this repo.
 

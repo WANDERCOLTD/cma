@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "merge-agent project config",
+  "description": "Schema for .merge-agent.json at the repo root.",
+  "type": "object",
+  "required": ["gate"],
+  "additionalProperties": false,
+  "properties": {
+    "gate": {
+      "type": "object",
+      "required": ["command"],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "Shell command run as the canonical gate. Exit 0 = green, anything else = red."
+        },
+        "runOn": {
+          "type": "string",
+          "enum": ["local", "ssh", "container"],
+          "default": "local",
+          "description": "Where to run the gate. v0.1 supports only \"local\"; ssh/container land in v0.2."
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 900,
+          "description": "Kill the gate after this many seconds. Default 15 minutes."
+        }
+      }
+    },
+    "ratchet": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Path (relative to repo root) of the ratchet baseline file. Required if ratchet is configured."
+        },
+        "lockCommand": {
+          "type": "string",
+          "description": "Shell command that re-locks the ratchet file when current counts improve. Run after a green gate."
+        },
+        "commitMessage": {
+          "type": "string",
+          "default": "chore: ratchet update after merge",
+          "description": "Commit message for the auto-committed ratchet update."
+        }
+      }
+    },
+    "branchProtection": {
+      "type": "string",
+      "enum": ["off", "warn", "error"],
+      "default": "warn",
+      "description": "Behaviour of the SessionStart hook when main has no branch protection."
+    },
+    "lockFile": {
+      "type": "string",
+      "default": ".merge-agent.lock",
+      "description": "Path (relative to repo root) of the merge-agent lock directory."
+    },
+    "lockTtlSeconds": {
+      "type": "integer",
+      "minimum": 60,
+      "default": 1800,
+      "description": "Lock is considered stale after this many seconds (allows recovery from crashed mergers)."
+    }
+  }
+}
