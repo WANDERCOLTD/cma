@@ -1,6 +1,6 @@
 {
   "shellcheck_warnings": 0,
-  "bats_tests": 42,
+  "bats_tests": 62,
   "todo_fixme_count": 0,
   "_note": "Locked 2026-05-18. CI verifies these on ubuntu-latest (canonical) + macos-latest. Adjust if shellcheck differs across platforms."
 }
