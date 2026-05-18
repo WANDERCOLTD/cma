@@ -1,0 +1,14 @@
+{
+  "gate": {
+    "command": "pytest -q",
+    "timeoutSeconds": 600
+  },
+  "merge": {
+    "mode": "merge-queue"
+  },
+  "ratchet": {
+    "file": ".ratchet.json",
+    "lockCommand": "bash scripts/check-ratchet.sh lock"
+  },
+  "branchProtection": "warn"
+}
