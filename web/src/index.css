@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 4%;
+    --primary: 265 85% 62%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 6% 10%;
+    --destructive: 350 80% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 265 85% 62%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 240 12% 4%;
+    --foreground: 240 5% 96%;
+    --card: 240 12% 7%;
+    --card-foreground: 240 5% 96%;
+    --popover: 240 12% 7%;
+    --popover-foreground: 240 5% 96%;
+    --primary: 265 85% 68%;
+    --primary-foreground: 240 12% 4%;
+    --secondary: 240 8% 14%;
+    --secondary-foreground: 240 5% 96%;
+    --muted: 240 8% 14%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 240 8% 14%;
+    --accent-foreground: 240 5% 96%;
+    --destructive: 350 80% 60%;
+    --destructive-foreground: 240 5% 96%;
+    --border: 240 6% 18%;
+    --input: 240 6% 18%;
+    --ring: 265 85% 68%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, sans-serif;
+  }
+
+  /* Ambient backdrop — subtle radial glow behind everything */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        ellipse 1200px 600px at 50% -10%,
+        color-mix(in oklab, hsl(var(--primary)) 18%, transparent),
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 900px 500px at 90% 110%,
+        color-mix(in oklab, hsl(220 90% 60%) 12%, transparent),
+        transparent 60%
+      );
+  }
+}
+
+@layer utilities {
+  .glass {
+    background-color: color-mix(in oklab, hsl(var(--card)) 60%, transparent);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    border: 1px solid color-mix(in oklab, hsl(var(--border)) 80%, transparent);
+  }
+
+  .dark .glass {
+    background-color: color-mix(in oklab, white 4%, transparent);
+    border-color: color-mix(in oklab, white 8%, transparent);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
