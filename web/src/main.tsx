@@ -5,6 +5,7 @@ import { App } from "@/App";
 import { GitHubAuthProvider } from "@/hooks/useGitHubAuth";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { ToastContextProvider } from "@/hooks/use-toast";
+import { PersonalSettingsProvider } from "@/lib/personal-settings";
 import "@/index.css";
 
 const queryClient = new QueryClient({
@@ -25,13 +26,15 @@ if (!rootEl) {
 ReactDOM.createRoot(rootEl).render(
   <React.StrictMode>
     <ThemeProvider>
-      <GitHubAuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <ToastContextProvider>
-            <App />
-          </ToastContextProvider>
-        </QueryClientProvider>
-      </GitHubAuthProvider>
+      <PersonalSettingsProvider>
+        <GitHubAuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <ToastContextProvider>
+              <App />
+            </ToastContextProvider>
+          </QueryClientProvider>
+        </GitHubAuthProvider>
+      </PersonalSettingsProvider>
     </ThemeProvider>
   </React.StrictMode>,
 );

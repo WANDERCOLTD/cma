@@ -12,6 +12,26 @@ All notable changes to 4wd are documented here. The format follows [Keep a Chang
 
 ---
 
+## [1.1.0] — 2026-05-17
+
+### Added
+
+- **Profile slideout** in the dashboard — opens from the top-right avatar dropdown. Right-side `Sheet` with four sections:
+  - **Identity** — large avatar with brand-gradient glow ring, display name, `@login`, bio, and an "Open on GitHub" icon link.
+  - **Repos using 4WD** — discovered via GitHub code-search (`filename:.4wd.json user:<login>`), sorted by most recently pushed. Each card switches the dashboard scope on click. Cached for 5 min through TanStack Query.
+  - **This week** — 2×2 stat grid (merges this week, mean gate duration, gate pass-rate, repos tracked) with brand-tinted glass tiles. Per-repo trend chips (`improving` / `stable` / `regressing`) computed from a commits-vs-prior-week heuristic. `TODO(v1.2)` to replace the heuristic with proper ratchet history.
+  - **Personal settings** — theme toggle (synced with `useTheme`), default-repo dropdown, queue + recent-merges polling sliders. Persisted to `localStorage` via a new `PersonalSettingsProvider` context.
+- `useConfiguredRepos` and `useAggregateStats` hooks, both rate-limit-aware (code-search has a 30/min bucket; aggregate-stats fetches at concurrency 5 with a per-repo check-runs cap of 10).
+- `ConfiguredRepo` type added to `web/src/types.ts`.
+
+### Changed
+
+- `useSignedInUser` now also surfaces `bio` and `htmlUrl` (extended via `SignedInUserExtended`), so the Profile slideout can render them without a second fetch.
+- Top-bar dropdown's "Profile" item is now wired (previously a no-op).
+- App rehydration prefers the user's personal-default repo when no session slug is stashed.
+
+---
+
 ## [0.4.0] — 2026-05-18
 
 ### Added
