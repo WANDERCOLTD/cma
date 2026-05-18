@@ -84,6 +84,18 @@
         }
       }
     },
+    "dashboard": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional override for the cma web dashboard URL.",
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Base URL of the dashboard. Defaults to the hosted instance (cma-dashboard-eight.vercel.app)."
+        }
+      }
+    },
     "branchProtection": {
       "type": "string",
       "enum": ["off", "warn", "error"],
