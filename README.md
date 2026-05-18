@@ -19,7 +19,7 @@ claude plugin marketplace add WANDERCOLTD/cma
 claude plugin install cma
 ```
 
-Requires `jq`, `git`, and `gh` (for the optional branch-protection check) on PATH.
+Requires `jq`, `git`, and `gh` >= 2.46.0 on PATH. `gh` is optional for the branch-protection check; required when `merge.mode: "merge-queue"`.
 
 ## Configure
 
@@ -38,6 +38,13 @@ Full schema:
     "runOn": "local",
     "timeoutSeconds": 900
   },
+  "merge": {
+    "mode": "direct-push",
+    "ghmq": {
+      "pollIntervalSeconds": 30,
+      "timeoutSeconds": 1800
+    }
+  },
   "ratchet": {
     "file": ".ratchet.json",
     "lockCommand": "bash scripts/check-ratchet.sh lock",
@@ -48,6 +55,15 @@ Full schema:
   "lockTtlSeconds": 1800
 }
 ```
+
+### Merge modes
+
+| `merge.mode` | Behaviour |
+|--------------|-----------|
+| `direct-push` (default) | After a green gate, `git push origin HEAD:main`. Optionally re-locks the ratchet inline. |
+| `merge-queue` | After a green gate, pushes the feature branch with `--force-with-lease`, opens (or reuses) a PR via `gh pr create`, submits with `gh pr merge --merge-queue`, polls until merged. Ratchet relock is **skipped** — let the GHA merge-queue workflow handle it via a follow-up PR (see [`examples/github-actions/`](./examples/github-actions/)). |
+
+Use `merge-queue` when branch protection on `main` requires PRs. Concurrent `/cma:merge` calls in `merge-queue` mode are safe — GHMQ handles serialisation on the GitHub side; the local file lock is irrelevant in that mode.
 
 See `examples/minimal/.merge-agent.json` and `examples/hf/.merge-agent.json`.
 
