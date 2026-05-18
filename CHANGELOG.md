@@ -6,11 +6,43 @@ All notable changes to cma are documented here. The format follows [Keep a Chang
 
 ### Planned
 
-- **v0.3.1** — repo picker in setup screen (no more `?repo=` URL editing).
-- **v0.4.0** — `/cma:init` bootstraps gate + ratchet + GHA into Node, Python, and shell projects. [#2](https://github.com/WANDERCOLTD/cma/issues/2)
-- **v0.4.x** — Rust, Go, Ruby stack templates as point releases.
+- **v0.4.x** — Rust, Go, Ruby stack templates for `/cma:init` as point releases.
 - **v0.5** — remote gate runner (`runOn: "ssh"`, `"gcloud-iap"`).
 - **v0.6** — long-lived queue subagent (parked on Claude Code platform fixes).
+
+---
+
+## [0.4.0] — 2026-05-18
+
+### Added
+
+- **`/cma:init`** slash command — bootstrap cma into any project in one step.
+  - Detects stack from marker files: Node (`package.json` with a `scripts.test`), Python (`pyproject.toml` / `requirements.txt`), shell/generic fallback. Override with `--stack`.
+  - Emits 3 files: stack-specific `.merge-agent.json`, starter `.ratchet.json` (null baselines), and `scripts/check-ratchet.sh` tailored per stack (tsc/jest for Node, mypy/pytest for Python, shellcheck/bats for shell).
+  - `--with-gha` adds `.github/workflows/cma-gate.yml`. Off by default to avoid clobbering existing CI. Suppressed for non-GitHub origins.
+  - `--dry-run` previews changes. `--force` overwrites. `--merge` deep-merges into existing `.merge-agent.json` (preserves user fields).
+  - `.gitignore` auto-updates with `.merge-agent.lock/` (dedupe-safe).
+  - Refuses on non-git directories; prints actionable next-steps with the branch-protection URL for the current repo.
+- New `lib/detect-stack.sh` helper.
+- New templates under `examples/<stack>/`: `check-ratchet.sh` + `cma-gate.yml` for Node, Python, and shell/minimal.
+- 20 new BATS tests for stack detection + init contracts (62 total).
+- Closes [#2](https://github.com/WANDERCOLTD/cma/issues/2).
+
+---
+
+## [0.3.1] — 2026-05-18
+
+### Added
+
+- **Repo picker** on the setup screen — searchable `Command` list of the user's recently-pushed repos with Recent / Owned / Organisations tabs. Avatars from GitHub. Public-mode users get a manual `owner/name` paste field.
+- `useUserRepos` hook fetches `GET /user/repos?sort=pushed&per_page=50&affiliation=owner,collaborator,organization_member` with TanStack Query caching.
+- `sessionStorage.cma:selectedRepo` persists the choice across reloads in the same tab.
+- shadcn `Command` (cmdk) and `Tabs` (Radix Tabs) primitives added to `web/src/components/ui/`.
+
+### Changed
+
+- Setup screen no longer shows the "No repository configured" amber box — the picker handles that flow.
+- App routing: `setup → picker → dashboard` with sessionStorage rehydrate.
 
 ---
 
