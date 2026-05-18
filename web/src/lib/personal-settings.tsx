@@ -24,6 +24,8 @@ export const POLL_BOUNDS = {
   mergesDefault: 60,
 } as const;
 
+export type RecentMergesView = "card" | "list";
+
 export interface PersonalSettings {
   /** Slug of the repo to land on next time (`owner/name`). `null` = "last visited". */
   defaultRepoSlug: string | null;
@@ -31,6 +33,8 @@ export interface PersonalSettings {
   queuePollSeconds: number;
   /** Recent-merges refetch interval (seconds). */
   mergesPollSeconds: number;
+  /** How Recent merges renders — card grid or compact list. */
+  recentMergesView: RecentMergesView;
 }
 
 interface StoredEnvelope {
@@ -42,6 +46,7 @@ const DEFAULTS: PersonalSettings = {
   defaultRepoSlug: null,
   queuePollSeconds: POLL_BOUNDS.queueDefault,
   mergesPollSeconds: POLL_BOUNDS.mergesDefault,
+  recentMergesView: "card",
 };
 
 function clamp(n: number, min: number, max: number): number {
@@ -65,6 +70,8 @@ function normalize(input: Partial<PersonalSettings>): PersonalSettings {
       POLL_BOUNDS.mergesMin,
       POLL_BOUNDS.mergesMax,
     ),
+    recentMergesView:
+      input.recentMergesView === "list" ? "list" : "card",
   };
 }
 
@@ -103,6 +110,7 @@ interface PersonalSettingsContextValue {
   setDefaultRepoSlug: (slug: string | null) => void;
   setQueuePollSeconds: (n: number) => void;
   setMergesPollSeconds: (n: number) => void;
+  setRecentMergesView: (v: RecentMergesView) => void;
   resetToDefaults: () => void;
 }
 
@@ -144,6 +152,10 @@ export function PersonalSettingsProvider({
     }));
   }, []);
 
+  const setRecentMergesView = React.useCallback((v: RecentMergesView) => {
+    setSettings((s) => ({ ...s, recentMergesView: v }));
+  }, []);
+
   const resetToDefaults = React.useCallback(() => {
     setSettings(DEFAULTS);
   }, []);
@@ -154,6 +166,7 @@ export function PersonalSettingsProvider({
       setDefaultRepoSlug,
       setQueuePollSeconds,
       setMergesPollSeconds,
+      setRecentMergesView,
       resetToDefaults,
     }),
     [
@@ -161,6 +174,7 @@ export function PersonalSettingsProvider({
       setDefaultRepoSlug,
       setQueuePollSeconds,
       setMergesPollSeconds,
+      setRecentMergesView,
       resetToDefaults,
     ],
   );

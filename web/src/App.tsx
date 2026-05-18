@@ -61,7 +61,7 @@ export function App(): JSX.Element {
   const repoSlug = React.useMemo(() => parseRepoFromUrl(), [searchTick]);
 
   // Personal preferences — drives `defaultRepoSlug` rehydration below.
-  const { settings: personal } = usePersonalSettings();
+  const { settings: personal, setRecentMergesView } = usePersonalSettings();
   const defaultRepoSlug = personal.defaultRepoSlug;
 
   // Auto-rehydrate: if the user picked a repo earlier this session and we
@@ -286,6 +286,8 @@ export function App(): JSX.Element {
           merges={merges}
           loading={mergesQuery.isLoading}
           onSelect={handleSelectMerge}
+          view={personal.recentMergesView}
+          onViewChange={setRecentMergesView}
         />
       </main>
 

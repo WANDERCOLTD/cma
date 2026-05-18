@@ -12,6 +12,14 @@ All notable changes to 4wd are documented here. The format follows [Keep a Chang
 
 ---
 
+## [1.2.0] — 2026-05-18
+
+### Added
+
+- **List view** for Recent merges on the dashboard. Header toggle (grid / list) sits top-right of the section; choice persists per browser via the existing `personal-settings` localStorage envelope (`recentMergesView: 'card' | 'list'`, default `'card'`). List rows are a single divided Card with avatar, title, `@author · branch`, shortSha, gate duration, ratchet summary, relative time, status — denser columns hide progressively below `xl`/`lg`/`md`.
+
+---
+
 ## [1.1.0] — 2026-05-17
 
 ### Added
