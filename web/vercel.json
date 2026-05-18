@@ -4,6 +4,5 @@
     "deploymentEnabled": {
       "main": false
     }
-  },
-  "_comment": "Production deploys are manual only — run `vercel --prod` from this directory. The `git.deploymentEnabled.main = false` blocks any future GitHub auto-trigger if someone later links the repo to Vercel via the UI. Allow a release branch by adding it here (e.g. \"release\": true) once that workflow lands."
+  }
 }

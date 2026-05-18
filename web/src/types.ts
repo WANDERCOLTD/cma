@@ -46,8 +46,8 @@ export interface RepoConfig {
   name: string;
   branchProtectionEnabled: boolean;
   mergeQueueEnabled: boolean;
-  cmaDisabled: boolean;
-  cmaVersion: string;
+  fourWdDisabled: boolean;
+  fourWdVersion: string;
 }
 
 export interface SignedInUser extends User {

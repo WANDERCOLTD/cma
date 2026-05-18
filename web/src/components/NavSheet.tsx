@@ -49,7 +49,7 @@ export function NavSheet({
             </span>
             4wd
           </SheetTitle>
-          <SheetDescription>4WD — drift control for your main branch — v{repo.cmaVersion}</SheetDescription>
+          <SheetDescription>4WD — drift control for your main branch — v{repo.fourWdVersion}</SheetDescription>
         </SheetHeader>
 
         <ScrollArea className="flex-1">

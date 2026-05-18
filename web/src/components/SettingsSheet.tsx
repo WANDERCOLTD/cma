@@ -78,7 +78,7 @@ export function SettingsSheet({
             <Section title="Repository">
               <Row label="Owner" value={repo.owner} />
               <Row label="Name" value={repo.name} />
-              <Row label="4wd version" value={repo.cmaVersion} mono />
+              <Row label="4wd version" value={repo.fourWdVersion} mono />
               <Row
                 label="Branch protection"
                 value={

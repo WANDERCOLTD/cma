@@ -73,7 +73,7 @@ export function useRepoConfig({
         //   - Use the Contents API to GET .4wd.json and parse it; or
         //   - Read from a hosted log endpoint.
         fourWdDisabled: false,
-        cmaVersion: __CMA_DASHBOARD_VERSION__,
+        fourWdVersion: __CMA_DASHBOARD_VERSION__,
       };
     },
     // Repo config rarely changes — poll less frequently.

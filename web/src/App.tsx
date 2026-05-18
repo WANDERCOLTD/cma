@@ -34,7 +34,7 @@ const FALLBACK_REPO: RepoConfig = {
   branchProtectionEnabled: false,
   mergeQueueEnabled: false,
   fourWdDisabled: false,
-  cmaVersion: __CMA_DASHBOARD_VERSION__,
+  fourWdVersion: __CMA_DASHBOARD_VERSION__,
 };
 
 const FALLBACK_USER: SignedInUser = {
