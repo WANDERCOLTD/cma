@@ -2,7 +2,7 @@
 # scripts/check-ratchet.sh — count-cap ratchet gate (ported from WANDERCOLTD/HF).
 #
 # Reads `.ratchet.json` at the repo root, measures three counts across the
-# cma shell sources, and:
+# 4wd shell sources, and:
 #   • fails if any count exceeds its baseline (ratchet up = forbidden)
 #   • emits a "lock the win" hint if any count drops below baseline
 #     (downward ratchet only via deliberate `lock` invocation)
@@ -65,7 +65,7 @@ measure_bats() {
     return
   fi
   # Exclude vendored bats-core/bats-assert/bats-support directories — they have
-  # their own .bats files (their own self-tests) that aren't cma tests.
+  # their own .bats files (their own self-tests) that aren't 4wd tests.
   count=$(find "$REPO_ROOT/test" -name '*.bats' -type f \
     -not -path "$REPO_ROOT/test/bats-core/*" \
     -not -path "$REPO_ROOT/test/bats-assert/*" \

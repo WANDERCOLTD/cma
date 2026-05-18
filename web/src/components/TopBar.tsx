@@ -46,12 +46,12 @@ export function TopBar({
             c
           </span>
           <div className="flex min-w-0 items-baseline gap-2">
-            <span className="text-sm font-semibold tracking-tight">cma</span>
+            <span className="text-sm font-semibold tracking-tight">4wd</span>
             <span className="hidden truncate text-sm text-muted-foreground sm:inline">
               {repo.owner}/{repo.name}
             </span>
           </div>
-          {repo.cmaDisabled ? (
+          {repo.fourWdDisabled ? (
             <Badge variant="failed" className="ml-1">
               KILL SWITCH ON
             </Badge>

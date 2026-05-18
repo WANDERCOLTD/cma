@@ -34,10 +34,10 @@ teardown() {
 }
 
 @test "dashboard.sh composes URL from SSH origin" {
-  ( cd "$TMP_REPO" && git remote add origin git@github.com:WANDERCOLTD/cma.git )
+  ( cd "$TMP_REPO" && git remote add origin git@github.com:WANDERCOLTD/4wd.git )
   run bash "$REPO_ROOT/bin/dashboard.sh" "$TMP_REPO"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"?repo=WANDERCOLTD/cma"* ]]
+  [[ "$output" == *"?repo=WANDERCOLTD/4wd"* ]]
 }
 
 @test "dashboard.sh composes URL from HTTPS origin" {
@@ -47,10 +47,10 @@ teardown() {
   [[ "$output" == *"?repo=foo/bar"* ]]
 }
 
-@test "dashboard.sh honours dashboard.url override in .merge-agent.json" {
+@test "dashboard.sh honours dashboard.url override in .4wd.json" {
   ( cd "$TMP_REPO" && git remote add origin git@github.com:foo/bar.git )
-  write_config '{ "gate": { "command": "true" }, "dashboard": { "url": "https://my-cma.example.com" } }'
+  write_config '{ "gate": { "command": "true" }, "dashboard": { "url": "https://my-4wd.example.com" } }'
   run bash "$REPO_ROOT/bin/dashboard.sh" "$TMP_REPO"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"https://my-cma.example.com/?repo=foo/bar"* ]]
+  [[ "$output" == *"https://my-4wd.example.com/?repo=foo/bar"* ]]
 }

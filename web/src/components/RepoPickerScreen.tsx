@@ -30,7 +30,7 @@ import { formatRelative, cn } from "@/lib/utils";
 
 const REPO_SLUG_RE = /^([A-Za-z0-9._-]+)\/([A-Za-z0-9._-]+)$/;
 
-const SELECTED_REPO_KEY = "cma:selectedRepo";
+const SELECTED_REPO_KEY = "4wd:selectedRepo";
 
 interface RepoPickerScreenProps {
   /** Public-mode users can only paste a slug — no listing. */

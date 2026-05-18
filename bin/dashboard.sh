@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bin/dashboard.sh — open the cma web dashboard in the default browser,
+# bin/dashboard.sh — open the 4wd web dashboard in the default browser,
 # scoped to the current repo via ?repo=<owner>/<repo>.
 #
 # If a GitHub token is discoverable on this machine (gh auth token, or the
@@ -10,14 +10,14 @@
 set -u
 ROOT="${1:?repo root required as \$1}"
 
-DEFAULT_URL="https://cma-dashboard-eight.vercel.app"
+DEFAULT_URL="https://4wd-dashboard.vercel.app"
 
-cd "$ROOT" || { echo "cma: cannot cd to $ROOT" >&2; exit 1; }
+cd "$ROOT" || { echo "4wd: cannot cd to $ROOT" >&2; exit 1; }
 
-# Resolve the dashboard URL: per-repo override in .merge-agent.json or default.
+# Resolve the dashboard URL: per-repo override in .4wd.json or default.
 URL="$DEFAULT_URL"
-if [ -f "$ROOT/.merge-agent.json" ] && command -v jq >/dev/null 2>&1; then
-  override=$(jq -r '.dashboard.url // empty' "$ROOT/.merge-agent.json" 2>/dev/null || true)
+if [ -f "$ROOT/.4wd.json" ] && command -v jq >/dev/null 2>&1; then
+  override=$(jq -r '.dashboard.url // empty' "$ROOT/.4wd.json" 2>/dev/null || true)
   if [ -n "$override" ]; then
     URL="$override"
   fi
@@ -25,7 +25,7 @@ fi
 
 remote=$(git remote get-url origin 2>/dev/null || true)
 if [ -z "$remote" ]; then
-  echo "cma: no 'origin' remote — cannot determine repo for the dashboard." >&2
+  echo "4wd: no 'origin' remote — cannot determine repo for the dashboard." >&2
   exit 1
 fi
 
@@ -35,7 +35,7 @@ if [[ "$remote" =~ github\.com[:/]([^/]+)/([^/.]+) ]]; then
   owner="${BASH_REMATCH[1]}"
   repo="${BASH_REMATCH[2]}"
 else
-  echo "cma: 'origin' is not a github.com URL ($remote) — dashboard expects GitHub." >&2
+  echo "4wd: 'origin' is not a github.com URL ($remote) — dashboard expects GitHub." >&2
   exit 1
 fi
 
@@ -52,11 +52,11 @@ fi
 target="$URL/?repo=$owner/$repo"
 if [ -n "$token" ]; then
   target="$target#token=$token"
-  echo "cma: opening dashboard → $URL/?repo=$owner/$repo (with token)"
+  echo "4wd: opening dashboard → $URL/?repo=$owner/$repo (with token)"
 else
-  echo "cma: opening dashboard → $target"
-  echo "cma: no GitHub token detected — dashboard will start in public mode."
-  echo "cma: set GITHUB_TOKEN, GH_TOKEN, or run 'gh auth login' for full access."
+  echo "4wd: opening dashboard → $target"
+  echo "4wd: no GitHub token detected — dashboard will start in public mode."
+  echo "4wd: set GITHUB_TOKEN, GH_TOKEN, or run 'gh auth login' for full access."
 fi
 
 # Cross-platform browser open.
@@ -67,5 +67,5 @@ elif command -v xdg-open >/dev/null 2>&1; then
 elif command -v start >/dev/null 2>&1; then
   start "$target"              # Windows (Git Bash)
 else
-  echo "cma: no browser-open command found. Visit manually: $target" >&2
+  echo "4wd: no browser-open command found. Visit manually: $target" >&2
 fi

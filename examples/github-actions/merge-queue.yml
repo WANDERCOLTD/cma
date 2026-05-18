@@ -34,8 +34,8 @@ jobs:
         run: npm ci
 
       - name: Run canonical gate
-        # MUST match the `gate.command` in your .merge-agent.json so the local
-        # /cma:merge run and the GHMQ run agree on the verdict.
+        # MUST match the `gate.command` in your .4wd.json so the local
+        # /4wd:merge run and the GHMQ run agree on the verdict.
         run: bash scripts/deploy-gate.sh dev
 
       - name: Lock ratchet (informational only)
@@ -44,7 +44,7 @@ jobs:
         # the lock-command updates the file in-place but the merge_group
         # commit is already finalised — so we emit a follow-up PR rather
         # than try to mutate the queued commit. Or skip entirely and rely on
-        # the cma plugin to do this on the local /cma:merge path.
+        # the 4wd plugin to do this on the local /4wd:merge path.
         run: |
           if [ -x scripts/check-ratchet.sh ]; then
             bash scripts/check-ratchet.sh lock

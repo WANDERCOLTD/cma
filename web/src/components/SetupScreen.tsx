@@ -12,7 +12,7 @@ interface SetupScreenProps {
 }
 
 const NEW_TOKEN_URL =
-  "https://github.com/settings/tokens/new?scopes=repo,read:org&description=cma+dashboard";
+  "https://github.com/settings/tokens/new?scopes=repo,read:org&description=4wd+dashboard";
 
 /**
  * First-run screen — shown when the user has no token and hasn't opted into
@@ -42,7 +42,7 @@ export function SetupScreen({
           </span>
           <div>
             <h1 className="text-xl font-semibold tracking-tight">
-              cma dashboard
+              4wd dashboard
             </h1>
             <p className="text-sm text-muted-foreground">
               {repoSlug

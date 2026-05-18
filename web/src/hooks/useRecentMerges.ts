@@ -52,7 +52,7 @@ function mapCommit(raw: CommitListItem): MergeRecord {
     mergedAt,
     // Approximated below via check-runs; 0 means unknown / no checks.
     gateSeconds: 0,
-    // TODO(v0.3.2): read from a hosted log endpoint (cma writes ratchet deltas
+    // TODO(v0.3.2): read from a hosted log endpoint (4wd writes ratchet deltas
     // to ${CLAUDE_PLUGIN_DATA}/merge-log.jsonl on the developer's machine,
     // which is not reachable from a browser).
     ratchetDelta: undefined,

@@ -47,9 +47,9 @@ export function NavSheet({
             <span className="grid h-7 w-7 place-items-center rounded-md bg-brand-gradient text-[11px] font-bold tracking-tight text-white">
               c
             </span>
-            cma
+            4wd
           </SheetTitle>
-          <SheetDescription>Claude Merge Agent — v{repo.cmaVersion}</SheetDescription>
+          <SheetDescription>4WD — drift control for your main branch — v{repo.cmaVersion}</SheetDescription>
         </SheetHeader>
 
         <ScrollArea className="flex-1">
@@ -101,7 +101,7 @@ export function NavSheet({
                 icon={<PowerOff className="h-4 w-4" />}
                 label="Kill switch"
                 trail={
-                  repo.cmaDisabled ? (
+                  repo.fourWdDisabled ? (
                     <Badge variant="failed">on</Badge>
                   ) : (
                     <Badge variant="idle">off</Badge>
@@ -121,12 +121,12 @@ export function NavSheet({
                 <SettingsIcon className="h-4 w-4" /> Settings
               </Button>
               <Button
-                variant={repo.cmaDisabled ? "destructive" : "outline"}
+                variant={repo.fourWdDisabled ? "destructive" : "outline"}
                 className="w-full justify-start"
                 onClick={onToggleKillSwitch}
               >
                 <PowerOff className="h-4 w-4" />
-                {repo.cmaDisabled ? "Re-enable cma" : "Trigger kill switch"}
+                {repo.fourWdDisabled ? "Re-enable 4wd" : "Trigger kill switch"}
               </Button>
             </Section>
 

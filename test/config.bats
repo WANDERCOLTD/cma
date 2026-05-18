@@ -13,14 +13,14 @@ teardown() {
   teardown_repo
 }
 
-@test "config_load without .merge-agent.json → exits 1 with setup help" {
+@test "config_load without .4wd.json → exits 1 with setup help" {
   run config_load "$TMP_REPO"
   [ "$status" -eq 1 ]
-  [[ "$output" == *"no .merge-agent.json"* ]]
+  [[ "$output" == *"no .4wd.json"* ]]
 }
 
 @test "config_load with invalid JSON → exits 1" {
-  echo "{ not json" > "$TMP_REPO/.merge-agent.json"
+  echo "{ not json" > "$TMP_REPO/.4wd.json"
   run config_load "$TMP_REPO"
   [ "$status" -eq 1 ]
   [[ "$output" == *"not valid JSON"* ]]

@@ -1,17 +1,17 @@
 ---
 name: merge
-description: Rebase current branch onto origin/main, run the project's canonical gate, push to main on green. Reads .merge-agent.json at the repo root.
+description: Rebase current branch onto origin/main, run the project's canonical gate, push to main on green. Reads .4wd.json at the repo root.
 ---
 
-# /cma:merge
+# /4wd:merge
 
 Run the serialised merge flow for the current feature branch.
 
 ## What I will do
 
-1. Read `.merge-agent.json` at the repo root. If missing, print setup instructions and stop.
+1. Read `.4wd.json` at the repo root. If missing, print setup instructions and stop.
 2. Refuse if the current branch is `main` (you can't merge main into itself).
-3. Acquire the file-based merge lock. If another `/cma:merge` is already in progress, print the lock holder + age and stop with `QUEUED — try again when the lock releases` (Phase 1 has no auto-wait; that lands in v0.2).
+3. Acquire the file-based merge lock. If another `/4wd:merge` is already in progress, print the lock holder + age and stop with `QUEUED — try again when the lock releases` (Phase 1 has no auto-wait; that lands in v0.2).
 4. `git fetch origin main && git rebase origin/main`. On conflict: release lock, print the conflicting files, abort.
 5. Run the configured `gate.command` with a `timeoutSeconds` deadline. Stream output as it runs.
 6. On green:

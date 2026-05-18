@@ -15,7 +15,7 @@ teardown() {
 @test "status with no config → exits 1 with setup hint" {
   run bash "$REPO_ROOT/bin/merge-status.sh" "$TMP_REPO"
   [ "$status" -eq 1 ]
-  [[ "$output" == *"no/invalid .merge-agent.json"* ]]
+  [[ "$output" == *"no/invalid .4wd.json"* ]]
 }
 
 @test "status with enabled config → STATE: ENABLED" {
@@ -29,14 +29,14 @@ teardown() {
   write_config '{ "disabled": true, "gate": { "command": "npm test" } }'
   run bash "$REPO_ROOT/bin/merge-status.sh" "$TMP_REPO"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"STATE: DISABLED via .merge-agent.json"* ]]
+  [[ "$output" == *"STATE: DISABLED via .4wd.json"* ]]
 }
 
-@test "status with CMA_DISABLE=1 → env var wins (DISABLED via env)" {
+@test "status with FWD_DISABLE=1 → env var wins (DISABLED via env)" {
   write_config '{ "disabled": false, "gate": { "command": "npm test" } }'
-  run env CMA_DISABLE=1 bash "$REPO_ROOT/bin/merge-status.sh" "$TMP_REPO"
+  run env FWD_DISABLE=1 bash "$REPO_ROOT/bin/merge-status.sh" "$TMP_REPO"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"DISABLED via CMA_DISABLE=1"* ]]
+  [[ "$output" == *"DISABLED via FWD_DISABLE=1"* ]]
 }
 
 @test "status shows gate.command from config" {
@@ -54,7 +54,7 @@ teardown() {
 @test "status shows held banner when lock present" {
   . "$REPO_ROOT/lib/lock.sh"
   write_config '{ "gate": { "command": "true" } }'
-  seed_lock "$TMP_REPO/.merge-agent.lock" "$$" "feat/x" "$(now_epoch)"
+  seed_lock "$TMP_REPO/.4wd.lock" "$$" "feat/x" "$(now_epoch)"
   run env NO_COLOR=1 bash "$REPO_ROOT/bin/merge-status.sh" "$TMP_REPO"
   [[ "$output" == *"HELD"* ]]
   [[ "$output" == *"feat/x"* ]]

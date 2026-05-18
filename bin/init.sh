@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# bin/init.sh — bootstrap cma gate + ratchet into a project.
+# bin/init.sh — bootstrap 4wd gate + ratchet into a project.
 #
 # Usage:
 #   bash bin/init.sh <repo_root> [--stack node|python|shell] [--force] [--merge]
 #                    [--dry-run] [--with-gha]
 #
 # By default emits 3 files at <repo_root>:
-#   .merge-agent.json   (from examples/<stack>/.merge-agent.json)
+#   .4wd.json   (from examples/<stack>/.4wd.json)
 #   .ratchet.json       (a starter file with null baselines)
 #   scripts/check-ratchet.sh   (from examples/<stack>/check-ratchet.sh)
 #
-# Add --with-gha to also emit .github/workflows/cma-gate.yml.
+# Add --with-gha to also emit .github/workflows/4wd-gate.yml.
 #
 # Exit codes:
 #   0 — files written (or dry-run completed)
@@ -21,7 +21,7 @@ set -u
 
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 ROOT="${1:-}"
-[ -z "$ROOT" ] && { echo "cma init: repo root required as \$1" >&2; exit 2; }
+[ -z "$ROOT" ] && { echo "4wd init: repo root required as \$1" >&2; exit 2; }
 shift
 
 . "$PLUGIN_ROOT/lib/detect-stack.sh"
@@ -41,22 +41,22 @@ while [ $# -gt 0 ]; do
     --merge)     MERGE=1; shift ;;
     --dry-run)   DRY_RUN=1; shift ;;
     --with-gha)  WITH_GHA=1; shift ;;
-    *)           echo "cma init: unknown flag: $1" >&2; exit 2 ;;
+    *)           echo "4wd init: unknown flag: $1" >&2; exit 2 ;;
   esac
 done
 
-cd "$ROOT" || { echo "cma init: cannot cd to $ROOT" >&2; exit 2; }
+cd "$ROOT" || { echo "4wd init: cannot cd to $ROOT" >&2; exit 2; }
 
 # ── pre-flight ────────────────────────────────────────────────
 if ! git rev-parse --git-dir >/dev/null 2>&1; then
-  echo "cma init: not a git repository — run \`git init\` first" >&2
+  echo "4wd init: not a git repository — run \`git init\` first" >&2
   exit 2
 fi
 
 # ── stack detection or override ───────────────────────────────
 if [ -n "$STACK" ]; then
   if ! is_supported_stack "$STACK"; then
-    echo "cma init: falling back to shell stack" >&2
+    echo "4wd init: falling back to shell stack" >&2
     STACK="shell"
   fi
 else
@@ -65,13 +65,13 @@ fi
 
 EXAMPLE_DIR=$(stack_example_dir "$STACK")
 if [ -z "$EXAMPLE_DIR" ] || [ ! -d "$PLUGIN_ROOT/examples/$EXAMPLE_DIR" ]; then
-  echo "cma init: no template directory for stack '$STACK'" >&2
+  echo "4wd init: no template directory for stack '$STACK'" >&2
   exit 2
 fi
 
-echo "cma init: detected stack → $STACK"
-echo "cma init: template source → examples/$EXAMPLE_DIR/"
-[ "$DRY_RUN" = 1 ] && echo "cma init: DRY-RUN — no files will be written"
+echo "4wd init: detected stack → $STACK"
+echo "4wd init: template source → examples/$EXAMPLE_DIR/"
+[ "$DRY_RUN" = 1 ] && echo "4wd init: DRY-RUN — no files will be written"
 
 # ── plan ──────────────────────────────────────────────────────
 
@@ -80,7 +80,7 @@ GHA_SUPPRESSED=0
 if [ "$WITH_GHA" = 1 ]; then
   remote=$(git remote get-url origin 2>/dev/null || true)
   if [ -n "$remote" ] && ! echo "$remote" | grep -qE 'github\.com[:/]'; then
-    echo "cma init: origin is not GitHub ($remote) — suppressing cma-gate.yml" >&2
+    echo "4wd init: origin is not GitHub ($remote) — suppressing 4wd-gate.yml" >&2
     GHA_SUPPRESSED=1
   fi
 fi
@@ -90,8 +90,8 @@ declare -a PLAN_DST=()
 declare -a PLAN_KIND=()  # "copy" or "starter" or "merge"
 
 # Standard 3 files
-PLAN_SRC+=("$PLUGIN_ROOT/examples/$EXAMPLE_DIR/.merge-agent.json")
-PLAN_DST+=("$ROOT/.merge-agent.json")
+PLAN_SRC+=("$PLUGIN_ROOT/examples/$EXAMPLE_DIR/.4wd.json")
+PLAN_DST+=("$ROOT/.4wd.json")
 PLAN_KIND+=("copy")
 
 PLAN_SRC+=("__ratchet_starter__")
@@ -103,8 +103,8 @@ PLAN_DST+=("$ROOT/scripts/check-ratchet.sh")
 PLAN_KIND+=("copy")
 
 if [ "$WITH_GHA" = 1 ] && [ "$GHA_SUPPRESSED" = 0 ]; then
-  PLAN_SRC+=("$PLUGIN_ROOT/examples/$EXAMPLE_DIR/cma-gate.yml")
-  PLAN_DST+=("$ROOT/.github/workflows/cma-gate.yml")
+  PLAN_SRC+=("$PLUGIN_ROOT/examples/$EXAMPLE_DIR/4wd-gate.yml")
+  PLAN_DST+=("$ROOT/.github/workflows/4wd-gate.yml")
   PLAN_KIND+=("copy")
 fi
 
@@ -113,7 +113,7 @@ declare -a CONFLICTS=()
 for i in "${!PLAN_DST[@]}"; do
   dst="${PLAN_DST[$i]}"
   if [ -e "$dst" ]; then
-    if [ "$dst" = "$ROOT/.merge-agent.json" ] && [ "$MERGE" = 1 ]; then
+    if [ "$dst" = "$ROOT/.4wd.json" ] && [ "$MERGE" = 1 ]; then
       PLAN_KIND[i]="merge"
       continue
     fi
@@ -130,10 +130,10 @@ for i in "${!PLAN_DST[@]}"; do
 done
 
 if [ "${#CONFLICTS[@]}" -gt 0 ]; then
-  echo "cma init: refusing to overwrite existing files:" >&2
+  echo "4wd init: refusing to overwrite existing files:" >&2
   for c in "${CONFLICTS[@]}"; do echo "  - $c" >&2; done
   echo >&2
-  echo "Re-run with --force to overwrite, or --merge to deep-merge .merge-agent.json." >&2
+  echo "Re-run with --force to overwrite, or --merge to deep-merge .4wd.json." >&2
   exit 1
 fi
 
@@ -150,7 +150,7 @@ EOF
 merge_merge_agent_json() {
   local src="$1" dst="$2"
   if ! command -v jq >/dev/null 2>&1; then
-    echo "cma init: --merge requires jq on PATH" >&2; return 1
+    echo "4wd init: --merge requires jq on PATH" >&2; return 1
   fi
   local tmp
   tmp=$(mktemp)
@@ -200,15 +200,15 @@ for i in "${!PLAN_DST[@]}"; do
   esac
 done
 
-# .gitignore upkeep — add .merge-agent.lock if not present (TL bear trap #1).
+# .gitignore upkeep — add .4wd.lock if not present (TL bear trap #1).
 if [ "$DRY_RUN" != 1 ]; then
   if [ -f "$ROOT/.gitignore" ]; then
-    if ! grep -qxF '.merge-agent.lock' "$ROOT/.gitignore" && ! grep -qxF '.merge-agent.lock/' "$ROOT/.gitignore"; then
-      echo '.merge-agent.lock/' >> "$ROOT/.gitignore"
-      echo "appended → $ROOT/.gitignore (.merge-agent.lock/)"
+    if ! grep -qxF '.4wd.lock' "$ROOT/.gitignore" && ! grep -qxF '.4wd.lock/' "$ROOT/.gitignore"; then
+      echo '.4wd.lock/' >> "$ROOT/.gitignore"
+      echo "appended → $ROOT/.gitignore (.4wd.lock/)"
     fi
   else
-    echo '.merge-agent.lock/' > "$ROOT/.gitignore"
+    echo '.4wd.lock/' > "$ROOT/.gitignore"
     echo "wrote → $ROOT/.gitignore"
   fi
 fi
@@ -216,14 +216,14 @@ fi
 # ── next steps ────────────────────────────────────────────────
 if [ "$DRY_RUN" = 1 ]; then
   echo
-  echo "cma init: DRY-RUN complete — re-run without --dry-run to write files."
+  echo "4wd init: DRY-RUN complete — re-run without --dry-run to write files."
   exit 0
 fi
 
 echo
 echo "Next steps:"
 echo "  1. bash scripts/check-ratchet.sh lock      # lock the canonical baseline"
-echo "  2. git add . && git commit -m 'chore: cma init'"
+echo "  2. git add . && git commit -m 'chore: 4wd init'"
 remote=$(git remote get-url origin 2>/dev/null || true)
 if [[ "$remote" =~ github\.com[:/]([^/]+)/([^/.]+) ]]; then
   owner="${BASH_REMATCH[1]}"
@@ -231,5 +231,5 @@ if [[ "$remote" =~ github\.com[:/]([^/]+)/([^/.]+) ]]; then
   echo "  3. Enable branch protection on main:"
   echo "       https://github.com/$owner/$repo/settings/branches"
 fi
-echo "  4. Install cma:  claude plugin marketplace add WANDERCOLTD/cma && claude plugin install cma"
-echo "  5. Try it:       /cma:status   then /cma:merge from a feature branch"
+echo "  4. Install 4wd:  claude plugin marketplace add WANDERCOLTD/4wd && claude plugin install 4wd"
+echo "  5. Try it:       /4wd:status   then /4wd:merge from a feature branch"

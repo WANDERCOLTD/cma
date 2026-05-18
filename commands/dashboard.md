@@ -1,11 +1,11 @@
 ---
 name: dashboard
-description: Open the cma web dashboard for the current repo in the default browser. Shows live queue, recent merges, and config.
+description: Open the 4wd web dashboard for the current repo in the default browser. Shows live queue, recent merges, and config.
 ---
 
-# /cma:dashboard
+# /4wd:dashboard
 
-Open the cma web dashboard pointed at the current repo.
+Open the 4wd web dashboard pointed at the current repo.
 
 ## How to execute
 

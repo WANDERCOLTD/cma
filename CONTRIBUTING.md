@@ -1,12 +1,12 @@
-# Contributing to cma
+# Contributing to 4wd
 
-Thanks for the interest. cma is small but disciplined — a few conventions keep it that way.
+Thanks for the interest. 4wd is small but disciplined — a few conventions keep it that way.
 
 ## Quick setup
 
 ```bash
-git clone git@github.com:WANDERCOLTD/cma.git
-cd cma
+git clone git@github.com:WANDERCOLTD/4wd.git
+cd 4wd
 git config core.hooksPath .githooks    # activate commit-msg + future hooks
 
 # Vendor BATS (one-time)
@@ -51,7 +51,7 @@ hooks/hooks.json                   # SessionStart hook
 bin/                               # entry-point shell scripts
 lib/                               # sourced helper modules
 scripts/                           # CI helpers (ratchet)
-schema/                            # JSON schema for .merge-agent.json
+schema/                            # JSON schema for .4wd.json
 examples/                          # minimal / hf / github-actions
 test/                              # BATS suite (test/bats-* are vendored)
 web/                               # Vite + React dashboard (v0.3)
@@ -88,7 +88,7 @@ gh release create vX.Y.Z --title "..." --notes "..."
 
 ## Asking questions / filing issues
 
-- **Bug or feature request:** open an issue at https://github.com/WANDERCOLTD/cma/issues — include your `.merge-agent.json`, the `/cma:status` output, and the failing command's stderr if relevant.
+- **Bug or feature request:** open an issue at https://github.com/WANDERCOLTD/4wd/issues — include your `.4wd.json`, the `/4wd:status` output, and the failing command's stderr if relevant.
 - **Security:** email instead of opening a public issue.
 
 ## License

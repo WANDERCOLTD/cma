@@ -1,6 +1,6 @@
-# cma dashboard
+# 4wd dashboard
 
-Web UI for **Claude Merge Agent** (cma) — v0.3.1.
+Web UI for **4WD — drift control for your main branch** (4wd) — v0.3.1.
 
 A status + history dashboard for a configured GitHub repo's main-branch merges.
 The CLI plugin lives at the repo root (`bin/`, `commands/`, `hooks/`, `lib/`);
@@ -11,7 +11,7 @@ this `web/` subdirectory is the hosted dashboard companion.
 The dashboard is a Vercel-hosted SPA with no backend. GitHub auth is
 sessionStorage-only:
 
-1. **From `/cma:dashboard`** — `bin/dashboard.sh` discovers a token from
+1. **From `/4wd:dashboard`** — `bin/dashboard.sh` discovers a token from
    `gh auth token`, `GITHUB_TOKEN`, or `GH_TOKEN` and appends it as
    `#token=<value>`. The dashboard consumes the hash on load, stashes the
    token in `sessionStorage`, then rewrites the URL to remove it.
@@ -46,7 +46,7 @@ npm run preview      # serve the production build locally
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  ☰   cma — WANDERCOLTD/HF                    [⚙] [👤 paw2paw]│  ← top bar
+│  ☰   4wd — WANDERCOLTD/HF                    [⚙] [👤 paw2paw]│  ← top bar
 ├──────────────────────────────────────────────────────────────┤
 │  Queue (live)                                                │
 │  ╭────────────────────────────────────────────────────────╮  │
@@ -65,7 +65,7 @@ Slideouts:
 
 - **Left (☰ hamburger)** — repo switcher, status overview, kill-switch toggle, recent activity.
 - **Right (click a merge)** — SHA, branch, commits in the branch, gate output (collapsed by default), ratchet delta, links to GitHub PR / commit / ratchet.
-- **Settings (⚙)** — config viewer (mock `.merge-agent.json`), kill-switch, dark/light mode toggle.
+- **Settings (⚙)** — config viewer (mock `.4wd.json`), kill-switch, dark/light mode toggle.
 
 Dark mode is the default. Toggle via the sun/moon icon in the top bar or the Settings sheet.
 
@@ -107,7 +107,7 @@ Brand gradient (purple → blue) is exposed as the Tailwind utility
 
 - the primary action variant (`<Button variant="gradient">`)
 - the active-queue-item left accent stripe
-- the cma monogram in the top bar / nav sheet
+- the 4wd monogram in the top bar / nav sheet
 
 Status chip colors (mapped to Tailwind palettes):
 
@@ -151,7 +151,7 @@ web/
     │   ├── useGitHubAuth.tsx    ← sessionStorage token + URL hash consumer
     │   ├── useRecentMerges.ts   ← commits on main + PR/check enrichment
     │   ├── useQueueState.ts     ← open PRs in the merge queue
-    │   ├── useRepoConfig.ts     ← branch protection + cma toggles
+    │   ├── useRepoConfig.ts     ← branch protection + 4wd toggles
     │   └── useSignedInUser.ts   ← /user (auth mode only)
     ├── components/
     │   ├── TopBar.tsx
@@ -178,15 +178,15 @@ web/
 | User identity | **Live** — `GET /user` when authenticated |
 | Branch protection / merge queue | **Live** — branch protection API |
 | Kill-switch toggle | **Read-only stub** — no FS write from a browser |
-| `.merge-agent.json` view | **Stub** — deep-link to GitHub |
+| `.4wd.json` view | **Stub** — deep-link to GitHub |
 | Ratchet delta | **Hidden** — `MergeRecord.ratchetDelta` undefined |
-| Gate log | **Hidden** — cma writes locally; not reachable |
+| Gate log | **Hidden** — 4wd writes locally; not reachable |
 | Gate seconds | **Approximated** — longest check-run on the merge commit |
 
 ### Coming in v0.3.2
 
 - Hosted log endpoint so ratchet delta and gate log can be surfaced.
-- Write-back to `.merge-agent.json` (kill switch toggle).
+- Write-back to `.4wd.json` (kill switch toggle).
 - Real-time updates (SSE).
 - GitHub OAuth device flow (no PAT paste).
 - Vitest harness for components and hooks.
@@ -205,4 +205,4 @@ web/
 
 ## License
 
-MIT (matches the parent cma plugin).
+MIT (matches the parent 4wd plugin).

@@ -3,9 +3,9 @@ name: status
 description: Show current merge lock state, recent merge log, and config summary for this repo.
 ---
 
-# /cma:status
+# /4wd:status
 
-Inspect the merge-agent state for this repo.
+Inspect the 4wd state for this repo.
 
 ## What I will print
 

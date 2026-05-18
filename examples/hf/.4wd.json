@@ -10,6 +10,6 @@
     "commitMessage": "chore: ratchet update after merge"
   },
   "branchProtection": "warn",
-  "lockFile": ".merge-agent.lock",
+  "lockFile": ".4wd.lock",
   "lockTtlSeconds": 1800
 }

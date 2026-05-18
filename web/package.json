@@ -1,9 +1,9 @@
 {
-  "name": "cma-web",
+  "name": "4wd-web",
   "private": true,
   "version": "0.3.1",
   "type": "module",
-  "description": "Claude Merge Agent dashboard — status + history UI for a configured GitHub repo's main-branch merges.",
+  "description": "4WD — drift control for your main branch dashboard — status + history UI for a configured GitHub repo's main-branch merges.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

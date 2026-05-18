@@ -16,12 +16,12 @@ fi
 
 # Allocate a private tmp repo per test so they can run in parallel.
 setup_repo() {
-  TMP_REPO="$(mktemp -d -t cma-test-XXXXXX)"
+  TMP_REPO="$(mktemp -d -t 4wd-test-XXXXXX)"
   export TMP_REPO
   ( cd "$TMP_REPO" && \
     git init -q -b main && \
-    git config user.email "test@cma" && \
-    git config user.name  "cma test" && \
+    git config user.email "test@4wd" && \
+    git config user.name  "4wd test" && \
     echo "init" > README.md && \
     git add README.md && \
     git -c commit.gpgsign=false commit -q -m "init" )
@@ -33,10 +33,10 @@ teardown_repo() {
   fi
 }
 
-# Write a minimal .merge-agent.json in TMP_REPO with optional overrides.
+# Write a minimal .4wd.json in TMP_REPO with optional overrides.
 # Usage: write_config '{ "gate": { "command": "true" } }'
 write_config() {
-  echo "$1" > "$TMP_REPO/.merge-agent.json"
+  echo "$1" > "$TMP_REPO/.4wd.json"
 }
 
 # Compute portable epoch seconds (BSD and GNU both accept +%s).

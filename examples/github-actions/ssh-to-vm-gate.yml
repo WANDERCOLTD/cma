@@ -5,7 +5,7 @@ name: merge-gate-via-vm
 # GHA runner itself. Use when:
 #   - your gate needs a database / cache / service that's expensive to spin up,
 #   - your gate runs much faster on the VM than on a cold GHA runner,
-#   - you want the GHA verdict to match your local /cma:merge gate byte-for-byte.
+#   - you want the GHA verdict to match your local /4wd:merge gate byte-for-byte.
 
 on:
   pull_request:

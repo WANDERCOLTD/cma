@@ -7,7 +7,7 @@ setup() {
   setup_repo
   # shellcheck source=../lib/lock.sh
   . "$REPO_ROOT/lib/lock.sh"
-  LOCK="$TMP_REPO/.merge-agent.lock"
+  LOCK="$TMP_REPO/.4wd.lock"
 }
 
 teardown() {

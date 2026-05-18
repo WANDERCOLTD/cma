@@ -1,10 +1,10 @@
 {
-  "name": "cma",
+  "name": "4wd",
   "version": "0.4.0",
-  "description": "Claude Merge Agent — serialised merge-to-main with a project-configurable canonical gate. Pairs with GitHub Merge Queue.",
+  "description": "4WD — drift control for your main branch — serialised merge-to-main with a project-configurable canonical gate. Pairs with GitHub Merge Queue.",
   "author": "WANDERCOLTD",
   "license": "MIT",
-  "homepage": "https://github.com/WANDERCOLTD/cma",
+  "homepage": "https://github.com/WANDERCOLTD/4wd",
   "keywords": ["merge", "git", "ci", "gate", "ratchet", "parallel", "worktree"],
   "commands": "commands/",
   "hooks": "hooks/hooks.json"

@@ -12,7 +12,7 @@ import * as React from "react";
  * endpoints at 60 req/hr. The dashboard surfaces a banner in this case.
  */
 
-const STORAGE_KEY = "cma-gh-token";
+const STORAGE_KEY = "4wd-gh-token";
 
 interface GitHubAuthContextValue {
   token: string | null;

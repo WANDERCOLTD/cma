@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # bin/session-start-check.sh — SessionStart hook.
 #
-# If .merge-agent.json is present at the repo root and branchProtection is
+# If .4wd.json is present at the repo root and branchProtection is
 # "warn" or "error", check whether origin/main has branch protection enabled
 # via gh. Emit a warning (or block, per config). Otherwise silent.
 
@@ -9,7 +9,7 @@ set -u
 
 # Find repo root from $PWD (hooks run with $PWD = workspace).
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
-CFG="$ROOT/.merge-agent.json"
+CFG="$ROOT/.4wd.json"
 [ -f "$CFG" ] || exit 0
 command -v jq >/dev/null 2>&1 || exit 0
 
@@ -31,11 +31,11 @@ if gh api "repos/$owner/$repo/branches/main/protection" >/dev/null 2>&1; then
 fi
 
 if [ "$mode" = "error" ]; then
-  echo "merge-agent: ERROR — main has no branch protection. Direct pushes are possible." >&2
+  echo "4wd: ERROR — main has no branch protection. Direct pushes are possible." >&2
   echo "  Configure branch protection at: https://github.com/$owner/$repo/settings/branches" >&2
   exit 2
 fi
 
-echo "merge-agent: WARN — main has no branch protection. Direct pushes are possible." >&2
+echo "4wd: WARN — main has no branch protection. Direct pushes are possible." >&2
 echo "  Configure at: https://github.com/$owner/$repo/settings/branches" >&2
 exit 0

@@ -8,7 +8,7 @@ import { RequestError } from "@octokit/request-error";
 export function makeOctokit(token: string | null): Octokit {
   return new Octokit({
     auth: token ?? undefined,
-    userAgent: "cma-dashboard/0.3.1",
+    userAgent: "4wd-dashboard/0.3.1",
   });
 }
 

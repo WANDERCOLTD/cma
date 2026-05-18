@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "merge-agent project config",
-  "description": "Schema for .merge-agent.json at the repo root.",
+  "title": "4wd project config",
+  "description": "Schema for .4wd.json at the repo root.",
   "type": "object",
   "required": ["gate"],
   "additionalProperties": false,
@@ -9,7 +9,7 @@
     "disabled": {
       "type": "boolean",
       "default": false,
-      "description": "Kill switch. When true, /cma:merge exits 0 immediately without touching git. The CMA_DISABLE=1 env var has the same effect at invocation time and overrides this field."
+      "description": "Kill switch. When true, /4wd:merge exits 0 immediately without touching git. The FWD_DISABLE=1 env var has the same effect at invocation time and overrides this field."
     },
     "gate": {
       "type": "object",
@@ -87,12 +87,12 @@
     "dashboard": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Optional override for the cma web dashboard URL.",
+      "description": "Optional override for the 4wd web dashboard URL.",
       "properties": {
         "url": {
           "type": "string",
           "format": "uri",
-          "description": "Base URL of the dashboard. Defaults to the hosted instance (cma-dashboard-eight.vercel.app)."
+          "description": "Base URL of the dashboard. Defaults to the hosted instance (4wd-dashboard.vercel.app)."
         }
       }
     },
@@ -104,8 +104,8 @@
     },
     "lockFile": {
       "type": "string",
-      "default": ".merge-agent.lock",
-      "description": "Path (relative to repo root) of the merge-agent lock directory."
+      "default": ".4wd.lock",
+      "description": "Path (relative to repo root) of the 4wd lock directory."
     },
     "lockTtlSeconds": {
       "type": "integer",

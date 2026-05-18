@@ -15,11 +15,11 @@ ROOT="${1:?repo root required as \$1}"
 . "$PLUGIN_ROOT/lib/ghmq.sh"
 
 # ── pre-flight ──────────────────────────────────────────────────────────────
-cd "$ROOT" || { echo "merge-agent: cannot cd to $ROOT"; exit 1; }
+cd "$ROOT" || { echo "4wd: cannot cd to $ROOT"; exit 1; }
 
 # Env-var kill switch (takes precedence over config).
-if [ "${CMA_DISABLE:-0}" = "1" ]; then
-  echo "cma: disabled via CMA_DISABLE=1 — use your normal push flow (e.g. /vm-cp, git push)"
+if [ "${FWD_DISABLE:-0}" = "1" ]; then
+  echo "4wd: disabled via FWD_DISABLE=1 — use your normal push flow (e.g. /vm-cp, git push)"
   exit 0
 fi
 
@@ -29,17 +29,17 @@ fi
 
 # Config-level kill switch.
 if [ "$CONFIG_DISABLED" = "true" ]; then
-  echo "cma: disabled via .merge-agent.json (\"disabled\": true) — use your normal push flow"
+  echo "4wd: disabled via .4wd.json (\"disabled\": true) — use your normal push flow"
   exit 0
 fi
 
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 if [ -z "$CURRENT_BRANCH" ] || [ "$CURRENT_BRANCH" = "HEAD" ]; then
-  echo "merge-agent: ERROR — could not determine current branch (detached HEAD?)"
+  echo "4wd: ERROR — could not determine current branch (detached HEAD?)"
   exit 1
 fi
 if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ]; then
-  echo "merge-agent: ERROR — refusing to merge $CURRENT_BRANCH into itself. Check out a feature branch first."
+  echo "4wd: ERROR — refusing to merge $CURRENT_BRANCH into itself. Check out a feature branch first."
   exit 1
 fi
 
@@ -52,13 +52,13 @@ case "$lock_rc" in
   0) ;;
   1)
     state=$(lock_state "$LOCK_DIR")
-    echo "merge-agent: QUEUED — another merge is in progress."
+    echo "4wd: QUEUED — another merge is in progress."
     echo "  $state"
-    echo "merge-agent: v0.1 has no auto-wait — try again when the lock releases. (Auto-queue lands in v0.2.)"
+    echo "4wd: v0.1 has no auto-wait — try again when the lock releases. (Auto-queue lands in v0.2.)"
     exit 2
     ;;
   2)
-    echo "merge-agent: reclaimed stale lock (previous owner dead or aged out)."
+    echo "4wd: reclaimed stale lock (previous owner dead or aged out)."
     ;;
 esac
 
@@ -66,22 +66,22 @@ esac
 trap 'lock_release "$LOCK_DIR"' EXIT
 
 # ── fetch + rebase ──────────────────────────────────────────────────────────
-echo "merge-agent: fetching origin/main"
+echo "4wd: fetching origin/main"
 if ! git fetch origin main; then
-  echo "merge-agent: FAIL — git fetch origin main failed"
+  echo "4wd: FAIL — git fetch origin main failed"
   exit 1
 fi
 
-echo "merge-agent: rebasing $CURRENT_BRANCH onto origin/main"
+echo "4wd: rebasing $CURRENT_BRANCH onto origin/main"
 if ! git rebase origin/main; then
-  echo "merge-agent: REBASE CONFLICT — aborting rebase, releasing lock"
+  echo "4wd: REBASE CONFLICT — aborting rebase, releasing lock"
   git rebase --abort 2>/dev/null || true
-  echo "merge-agent: resolve conflicts on $CURRENT_BRANCH and run /merge again"
+  echo "4wd: resolve conflicts on $CURRENT_BRANCH and run /merge again"
   exit 1
 fi
 
 # ── gate ────────────────────────────────────────────────────────────────────
-echo "merge-agent: running gate (timeout ${CONFIG_GATE_TIMEOUT}s): $CONFIG_GATE_COMMAND"
+echo "4wd: running gate (timeout ${CONFIG_GATE_TIMEOUT}s): $CONFIG_GATE_COMMAND"
 echo "─────────────────────────────────────────────────────────────"
 
 if command -v gtimeout >/dev/null 2>&1; then
@@ -104,13 +104,13 @@ GATE_END=$(date +%s)
 GATE_ELAPSED=$(( GATE_END - GATE_START ))
 
 echo "─────────────────────────────────────────────────────────────"
-echo "merge-agent: gate finished in ${GATE_ELAPSED}s with exit code $gate_rc"
+echo "4wd: gate finished in ${GATE_ELAPSED}s with exit code $gate_rc"
 
 if [ "$gate_rc" -ne 0 ]; then
   if [ "$gate_rc" -eq 124 ]; then
-    echo "merge-agent: TIMEOUT — gate exceeded ${CONFIG_GATE_TIMEOUT}s and was killed"
+    echo "4wd: TIMEOUT — gate exceeded ${CONFIG_GATE_TIMEOUT}s and was killed"
   fi
-  echo "merge-agent: FAIL — gate exited $gate_rc, not pushing"
+  echo "4wd: FAIL — gate exited $gate_rc, not pushing"
   exit 1
 fi
 
@@ -119,10 +119,10 @@ MERGED_SHA=""
 
 case "$CONFIG_MERGE_MODE" in
   direct-push)
-    echo "merge-agent: pushing $CURRENT_BRANCH to origin/main (mode=direct-push)"
+    echo "4wd: pushing $CURRENT_BRANCH to origin/main (mode=direct-push)"
     if ! git push origin "HEAD:main"; then
-      echo "merge-agent: PUSH FAILED — non-fast-forward or branch protection rejected"
-      echo "merge-agent: your branch is rebased locally; re-run /cma:merge to retry"
+      echo "4wd: PUSH FAILED — non-fast-forward or branch protection rejected"
+      echo "4wd: your branch is rebased locally; re-run /4wd:merge to retry"
       exit 1
     fi
     MERGED_SHA=$(git rev-parse HEAD)
@@ -134,15 +134,15 @@ case "$CONFIG_MERGE_MODE" in
   merge-queue)
     if ! ghmq_preflight; then exit 1; fi
 
-    echo "merge-agent: submitting $CURRENT_BRANCH via GitHub Merge Queue"
+    echo "4wd: submitting $CURRENT_BRANCH via GitHub Merge Queue"
     if ! ghmq_push_feature_branch "$CURRENT_BRANCH"; then exit 1; fi
 
     pr_number=$(ghmq_open_or_reuse_pr "$CURRENT_BRANCH")
     if [ -z "$pr_number" ]; then
-      echo "merge-agent: failed to open/find PR for $CURRENT_BRANCH" >&2
+      echo "4wd: failed to open/find PR for $CURRENT_BRANCH" >&2
       exit 1
     fi
-    echo "merge-agent: PR #$pr_number opened/reused"
+    echo "4wd: PR #$pr_number opened/reused"
 
     if ! ghmq_submit_to_queue "$pr_number"; then exit 1; fi
 
@@ -159,17 +159,17 @@ case "$CONFIG_MERGE_MODE" in
     # follow-up PR rather than pushing direct to main (which would defeat
     # the queue). See examples/github-actions/merge-queue.yml.
     if [ -n "$CONFIG_RATCHET_LOCK_COMMAND" ]; then
-      echo "merge-agent: ratchet relock skipped in merge-queue mode (GHA workflow owns it)"
+      echo "4wd: ratchet relock skipped in merge-queue mode (GHA workflow owns it)"
     fi
     ;;
 esac
 
 # ── log + done ──────────────────────────────────────────────────────────────
-LOG_DIR="${CLAUDE_PLUGIN_DATA:-$ROOT/.merge-agent-data}"
+LOG_DIR="${CLAUDE_PLUGIN_DATA:-$ROOT/.4wd-data}"
 mkdir -p "$LOG_DIR"
 LOG="$LOG_DIR/merge-log.jsonl"
 printf '{"ts":"%s","branch":"%s","sha":"%s","gate_seconds":%s,"result":"MERGED"}\n' \
   "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$CURRENT_BRANCH" "$MERGED_SHA" "$GATE_ELAPSED" >> "$LOG"
 
-echo "merge-agent: MERGED  $MERGED_SHA  $CURRENT_BRANCH  (gate ${GATE_ELAPSED}s)"
+echo "4wd: MERGED  $MERGED_SHA  $CURRENT_BRANCH  (gate ${GATE_ELAPSED}s)"
 exit 0

@@ -10,7 +10,7 @@ interface ThemeContextValue {
 
 const ThemeContext = React.createContext<ThemeContextValue | null>(null);
 
-const STORAGE_KEY = "cma-theme";
+const STORAGE_KEY = "4wd-theme";
 
 function readInitialTheme(): Theme {
   if (typeof window === "undefined") return "dark";

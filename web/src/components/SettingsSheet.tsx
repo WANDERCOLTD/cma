@@ -78,7 +78,7 @@ export function SettingsSheet({
             <Section title="Repository">
               <Row label="Owner" value={repo.owner} />
               <Row label="Name" value={repo.name} />
-              <Row label="cma version" value={repo.cmaVersion} mono />
+              <Row label="4wd version" value={repo.cmaVersion} mono />
               <Row
                 label="Branch protection"
                 value={
@@ -117,18 +117,18 @@ export function SettingsSheet({
 
             <Section title="Kill switch">
               <p className="text-sm text-muted-foreground">
-                When enabled, cma will refuse to merge anything until manually
+                When enabled, 4wd will refuse to merge anything until manually
                 re-enabled. Equivalent to setting{" "}
-                <code className="font-mono text-xs">CMA_DISABLE=1</code> or the{" "}
+                <code className="font-mono text-xs">FWD_DISABLE=1</code> or the{" "}
                 <code className="font-mono text-xs">disabled</code> flag in{" "}
-                <code className="font-mono text-xs">.merge-agent.json</code>.
+                <code className="font-mono text-xs">.4wd.json</code>.
               </p>
               <div className="flex items-center justify-between rounded-lg border border-border/60 p-3">
                 <div>
-                  <p className="text-sm font-medium">Disable cma</p>
+                  <p className="text-sm font-medium">Disable 4wd</p>
                   <p className="text-xs text-muted-foreground">
                     Status:{" "}
-                    {repo.cmaDisabled ? (
+                    {repo.fourWdDisabled ? (
                       <span className="text-rose-400">ON — merges blocked</span>
                     ) : (
                       <span className="text-emerald-400">OFF — operational</span>
@@ -136,17 +136,17 @@ export function SettingsSheet({
                   </p>
                 </div>
                 <Button
-                  variant={repo.cmaDisabled ? "destructive" : "outline"}
+                  variant={repo.fourWdDisabled ? "destructive" : "outline"}
                   size="sm"
                   onClick={onToggleKillSwitch}
                   title="Read-only in v0.3 — toggling defers to v0.3.2"
                 >
-                  {repo.cmaDisabled ? "Re-enable" : "Disable"}
+                  {repo.fourWdDisabled ? "Re-enable" : "Disable"}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
                 Read-only in v0.3 — write-back to{" "}
-                <code className="font-mono">.merge-agent.json</code> lands in
+                <code className="font-mono">.4wd.json</code> lands in
                 v0.3.2.
               </p>
             </Section>
@@ -180,11 +180,11 @@ export function SettingsSheet({
             <div className="flex flex-wrap gap-2">
               <Button asChild variant="outline" size="sm">
                 <a
-                  href={`https://github.com/${repoSlug}/blob/main/.merge-agent.json`}
+                  href={`https://github.com/${repoSlug}/blob/main/.4wd.json`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Github className="h-4 w-4" /> View .merge-agent.json
+                  <Github className="h-4 w-4" /> View .4wd.json
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </Button>

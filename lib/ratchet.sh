@@ -17,34 +17,34 @@ ratchet_relock_if_changed() {
   fi
 
   if [ ! -f "$root/$file" ]; then
-    echo "merge-agent: ratchet file not found at $file — skipping re-lock"
+    echo "4wd: ratchet file not found at $file — skipping re-lock"
     return 0
   fi
 
-  echo "merge-agent: running ratchet lock command: $cmd"
+  echo "4wd: running ratchet lock command: $cmd"
   ( cd "$root" && bash -c "$cmd" )
   local rc=$?
   if [ "$rc" -ne 0 ]; then
-    echo "merge-agent: ratchet lock command exited $rc — non-blocking, continuing"
+    echo "4wd: ratchet lock command exited $rc — non-blocking, continuing"
     return 0
   fi
 
   # Did the ratchet file change?
   if git -C "$root" diff --quiet -- "$file"; then
-    echo "merge-agent: ratchet unchanged — no commit"
+    echo "4wd: ratchet unchanged — no commit"
     return 0
   fi
 
-  echo "merge-agent: ratchet improved — committing"
+  echo "4wd: ratchet improved — committing"
   git -C "$root" add -- "$file"
   git -C "$root" commit -m "$msg" >/dev/null || {
-    echo "merge-agent: ratchet commit failed (non-blocking)"
+    echo "4wd: ratchet commit failed (non-blocking)"
     return 0
   }
   git -C "$root" push origin HEAD:main || {
-    echo "merge-agent: ratchet push failed (non-blocking) — manual push may be needed"
+    echo "4wd: ratchet push failed (non-blocking) — manual push may be needed"
     return 0
   }
-  echo "merge-agent: ratchet update pushed"
+  echo "4wd: ratchet update pushed"
   return 0
 }

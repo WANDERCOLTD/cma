@@ -26,14 +26,14 @@ import {
 } from "@/lib/github";
 import type { MergeRecord, RepoConfig, SignedInUser } from "@/types";
 
-const PUBLIC_MODE_ACK_KEY = "cma-public-mode-ack";
+const PUBLIC_MODE_ACK_KEY = "4wd-public-mode-ack";
 
 const FALLBACK_REPO: RepoConfig = {
   owner: "",
   name: "",
   branchProtectionEnabled: false,
   mergeQueueEnabled: false,
-  cmaDisabled: false,
+  fourWdDisabled: false,
   cmaVersion: __CMA_DASHBOARD_VERSION__,
 };
 
@@ -190,13 +190,13 @@ export function App(): JSX.Element {
   }, []);
 
   const handleToggleKillSwitch = React.useCallback(() => {
-    // TODO(v0.3.2): write back to .merge-agent.json via a hosted endpoint.
+    // TODO(v0.3.2): write back to .4wd.json via a hosted endpoint.
     // The dashboard has no file-system access, so this remains a read-only
     // surface for now.
     toast({
       title: "Kill switch is read-only in v0.3",
       description:
-        "Edit .merge-agent.json in the repo and commit to toggle cma. Write-back lands in v0.3.2.",
+        "Edit .4wd.json in the repo and commit to toggle 4wd. Write-back lands in v0.3.2.",
     });
   }, [toast]);
 

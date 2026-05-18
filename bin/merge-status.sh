@@ -8,7 +8,7 @@ ROOT="${1:?repo root required as \$1}"
 . "$PLUGIN_ROOT/lib/lock.sh"
 . "$PLUGIN_ROOT/lib/config.sh"
 
-cd "$ROOT" || { echo "merge-agent: cannot cd to $ROOT"; exit 1; }
+cd "$ROOT" || { echo "4wd: cannot cd to $ROOT"; exit 1; }
 
 # ── ANSI colours (respect NO_COLOR + non-TTY) ──────────────────────────────
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
@@ -36,20 +36,20 @@ row() {
 }
 
 if ! config_load "$ROOT" 2>/dev/null; then
-  echo "cma: no/invalid .merge-agent.json — run /cma:merge to see setup help"
+  echo "4wd: no/invalid .4wd.json — run /4wd:merge to see setup help"
   exit 1
 fi
 
 LOCK_DIR="$ROOT/$CONFIG_LOCK_FILE"
 
 # ── Header + state banner ──────────────────────────────────────────────────
-printf '\n%b%b cma %b — Claude Merge Agent\n' "$C_BOLD" "$C_PURPLE" "$C_RESET"
+printf '\n%b%b 4wd %b — 4WD — drift control for your main branch\n' "$C_BOLD" "$C_PURPLE" "$C_RESET"
 
-if [ "${CMA_DISABLE:-0}" = "1" ]; then
-  printf '  %bSTATE: DISABLED%b via CMA_DISABLE=1 env var %b(env var wins over config)%b\n' \
+if [ "${FWD_DISABLE:-0}" = "1" ]; then
+  printf '  %bSTATE: DISABLED%b via FWD_DISABLE=1 env var %b(env var wins over config)%b\n' \
     "$C_ROSE" "$C_RESET" "$C_DIM" "$C_RESET"
 elif [ "$CONFIG_DISABLED" = "true" ]; then
-  printf '  %bSTATE: DISABLED%b via .merge-agent.json %b("disabled": true)%b\n' \
+  printf '  %bSTATE: DISABLED%b via .4wd.json %b("disabled": true)%b\n' \
     "$C_ROSE" "$C_RESET" "$C_DIM" "$C_RESET"
 else
   printf '  %bSTATE: ENABLED%b\n' "$C_GREEN" "$C_RESET"
@@ -107,11 +107,11 @@ fi
 
 # ── Recent merges + bar chart ──────────────────────────────────────────────
 banner "recent merges"
-LOG_DIR="${CLAUDE_PLUGIN_DATA:-$ROOT/.merge-agent-data}"
+LOG_DIR="${CLAUDE_PLUGIN_DATA:-$ROOT/.4wd-data}"
 LOG="$LOG_DIR/merge-log.jsonl"
 
 if [ ! -f "$LOG" ]; then
-  printf '  %b<none logged yet — your next /cma:merge will be the first>%b\n' "$C_DIM" "$C_RESET"
+  printf '  %b<none logged yet — your next /4wd:merge will be the first>%b\n' "$C_DIM" "$C_RESET"
 else
   # Pull last 10 entries, extract { ts, branch, sha, gate_seconds, result }.
   tail -n 10 "$LOG" | while IFS= read -r line; do

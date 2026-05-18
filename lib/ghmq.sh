@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # lib/ghmq.sh — GitHub Merge Queue submission helpers.
 #
-# Used when .merge-agent.json has `merge.mode: "merge-queue"`. Pushes the
+# Used when .4wd.json has `merge.mode: "merge-queue"`. Pushes the
 # rebased feature branch, opens a PR, submits to the merge queue, and polls
 # until merge or failure.
 #
@@ -17,27 +17,27 @@ GHMQ_GH_MIN_MINOR=46
 # Exits non-zero with a clear message on any failure.
 ghmq_preflight() {
   if ! command -v gh >/dev/null 2>&1; then
-    echo "merge-agent: gh CLI is required for merge.mode=\"merge-queue\" but is not on PATH." >&2
+    echo "4wd: gh CLI is required for merge.mode=\"merge-queue\" but is not on PATH." >&2
     echo "  Install: https://cli.github.com/" >&2
     return 1
   fi
 
   if ! gh auth status >/dev/null 2>&1; then
-    echo "merge-agent: gh CLI is not authenticated. Run \`gh auth login\` and retry." >&2
+    echo "4wd: gh CLI is not authenticated. Run \`gh auth login\` and retry." >&2
     return 1
   fi
 
   local version major minor
   version=$(gh --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
   if [ -z "$version" ]; then
-    echo "merge-agent: could not parse gh version. Update to >= ${GHMQ_GH_MIN_MAJOR}.${GHMQ_GH_MIN_MINOR}." >&2
+    echo "4wd: could not parse gh version. Update to >= ${GHMQ_GH_MIN_MAJOR}.${GHMQ_GH_MIN_MINOR}." >&2
     return 1
   fi
   major=$(echo "$version" | cut -d. -f1)
   minor=$(echo "$version" | cut -d. -f2)
   if [ "$major" -lt "$GHMQ_GH_MIN_MAJOR" ] || \
      { [ "$major" -eq "$GHMQ_GH_MIN_MAJOR" ] && [ "$minor" -lt "$GHMQ_GH_MIN_MINOR" ]; }; then
-    echo "merge-agent: gh $version is too old for --merge-queue (need >= ${GHMQ_GH_MIN_MAJOR}.${GHMQ_GH_MIN_MINOR})." >&2
+    echo "4wd: gh $version is too old for --merge-queue (need >= ${GHMQ_GH_MIN_MAJOR}.${GHMQ_GH_MIN_MINOR})." >&2
     echo "  Upgrade: brew upgrade gh  (or your platform's equivalent)" >&2
     return 1
   fi
@@ -51,9 +51,9 @@ ghmq_preflight() {
 # --force: it refuses if origin has new commits we don't have locally.
 ghmq_push_feature_branch() {
   local branch="$1"
-  echo "merge-agent: pushing $branch to origin with --force-with-lease"
+  echo "4wd: pushing $branch to origin with --force-with-lease"
   if ! git push --force-with-lease origin "$branch"; then
-    echo "merge-agent: PUSH FAILED — origin has commits you don't. Re-fetch and re-run /cma:merge." >&2
+    echo "4wd: PUSH FAILED — origin has commits you don't. Re-fetch and re-run /4wd:merge." >&2
     return 1
   fi
   return 0
@@ -76,18 +76,18 @@ ghmq_open_or_reuse_pr() {
   title=$(git log -1 --pretty=%s)
   body=$(git log -1 --pretty=%b)
   if [ -z "$body" ]; then
-    body="Submitted by cma via \`/cma:merge\`."
+    body="Submitted by 4wd via \`/4wd:merge\`."
   fi
 
   local pr_url pr_number
   pr_url=$(gh pr create --base main --head "$branch" --title "$title" --body "$body" 2>&1 | tail -1)
   if [ -z "$pr_url" ]; then
-    echo "merge-agent: gh pr create produced no URL — failing." >&2
+    echo "4wd: gh pr create produced no URL — failing." >&2
     return 1
   fi
   pr_number=$(echo "$pr_url" | grep -oE '/pull/[0-9]+' | grep -oE '[0-9]+')
   if [ -z "$pr_number" ]; then
-    echo "merge-agent: could not parse PR number from: $pr_url" >&2
+    echo "4wd: could not parse PR number from: $pr_url" >&2
     return 1
   fi
   echo "$pr_number"
@@ -96,9 +96,9 @@ ghmq_open_or_reuse_pr() {
 # ghmq_submit_to_queue — add a PR to the merge queue.
 ghmq_submit_to_queue() {
   local pr="$1"
-  echo "merge-agent: submitting PR #$pr to merge queue"
+  echo "4wd: submitting PR #$pr to merge queue"
   if ! gh pr merge "$pr" --merge-queue 2>&1; then
-    echo "merge-agent: gh pr merge --merge-queue failed for PR #$pr" >&2
+    echo "4wd: gh pr merge --merge-queue failed for PR #$pr" >&2
     return 1
   fi
   return 0
@@ -116,7 +116,7 @@ ghmq_poll_until_done() {
     now=$(date +%s)
     elapsed=$(( now - start ))
     if [ "$elapsed" -gt "$timeout" ]; then
-      echo "merge-agent: TIMEOUT waiting for PR #$pr after ${elapsed}s" >&2
+      echo "4wd: TIMEOUT waiting for PR #$pr after ${elapsed}s" >&2
       return 1
     fi
 
@@ -127,23 +127,23 @@ ghmq_poll_until_done() {
 
     case "$state" in
       MERGED/*)
-        echo "merge-agent: PR #$pr MERGED via queue (after ${elapsed}s)"
+        echo "4wd: PR #$pr MERGED via queue (after ${elapsed}s)"
         return 0
         ;;
       CLOSED/*)
-        echo "merge-agent: PR #$pr was CLOSED without merge" >&2
+        echo "4wd: PR #$pr was CLOSED without merge" >&2
         return 1
         ;;
       OPEN/CLEAN|OPEN/UNSTABLE|OPEN/UNKNOWN|OPEN/HAS_HOOKS)
         # Still in queue or being processed.
-        printf "merge-agent: PR #$pr in queue (state=%s elapsed=%ss)\r" "$state" "$elapsed"
+        printf "4wd: PR #$pr in queue (state=%s elapsed=%ss)\r" "$state" "$elapsed"
         ;;
       OPEN/BLOCKED|OPEN/DIRTY|OPEN/BEHIND)
-        echo "merge-agent: PR #$pr blocked or dirty (state=$state). Check the PR in GitHub." >&2
+        echo "4wd: PR #$pr blocked or dirty (state=$state). Check the PR in GitHub." >&2
         return 1
         ;;
       *)
-        echo "merge-agent: PR #$pr unknown state=$state — continuing to poll" >&2
+        echo "4wd: PR #$pr unknown state=$state — continuing to poll" >&2
         ;;
     esac
 

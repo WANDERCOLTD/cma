@@ -36,7 +36,7 @@ interface PullListItem {
  *  3. branch protection's queue checks (we don't have them here, so skip).
  *
  * Falls back to "show every open non-draft PR with auto_merge set" — which
- * matches how cma + GitHub's own merge queue work in practice.
+ * matches how 4wd + GitHub's own merge queue work in practice.
  */
 function statusFor(pr: PullListItem): QueueStatus {
   if (pr.state === "closed") return "merged";

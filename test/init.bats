@@ -58,7 +58,7 @@ teardown() {
   [ "$output" = "node" ]
 }
 
-# ── /cma:init pre-flight ───────────────────────────────────────
+# ── /4wd:init pre-flight ───────────────────────────────────────
 
 @test "init: refuses on non-git directory" {
   local dir
@@ -80,7 +80,7 @@ teardown() {
   run bash "$REPO_ROOT/bin/init.sh" "$TMP_REPO" --dry-run
   [ "$status" -eq 0 ]
   [[ "$output" == *"DRY-RUN"* ]]
-  [ ! -f "$TMP_REPO/.merge-agent.json" ]
+  [ ! -f "$TMP_REPO/.4wd.json" ]
   [ ! -f "$TMP_REPO/.ratchet.json" ]
   [ ! -f "$TMP_REPO/scripts/check-ratchet.sh" ]
 }
@@ -88,25 +88,25 @@ teardown() {
 @test "init: shell-stack repo writes 3 files" {
   run bash "$REPO_ROOT/bin/init.sh" "$TMP_REPO"
   [ "$status" -eq 0 ]
-  [ -f "$TMP_REPO/.merge-agent.json" ]
+  [ -f "$TMP_REPO/.4wd.json" ]
   [ -f "$TMP_REPO/.ratchet.json" ]
   [ -f "$TMP_REPO/scripts/check-ratchet.sh" ]
-  [ ! -f "$TMP_REPO/.github/workflows/cma-gate.yml" ]
+  [ ! -f "$TMP_REPO/.github/workflows/4wd-gate.yml" ]
 }
 
-@test "init: --with-gha also writes cma-gate.yml" {
+@test "init: --with-gha also writes 4wd-gate.yml" {
   ( cd "$TMP_REPO" && git remote add origin git@github.com:foo/bar.git )
   run bash "$REPO_ROOT/bin/init.sh" "$TMP_REPO" --with-gha
   [ "$status" -eq 0 ]
-  [ -f "$TMP_REPO/.github/workflows/cma-gate.yml" ]
+  [ -f "$TMP_REPO/.github/workflows/4wd-gate.yml" ]
 }
 
-@test "init: --with-gha on non-GitHub origin suppresses cma-gate.yml" {
+@test "init: --with-gha on non-GitHub origin suppresses 4wd-gate.yml" {
   ( cd "$TMP_REPO" && git remote add origin git@gitlab.com:foo/bar.git )
   run bash "$REPO_ROOT/bin/init.sh" "$TMP_REPO" --with-gha
   [ "$status" -eq 0 ]
   [[ "$output" == *"not GitHub"* ]]
-  [ ! -f "$TMP_REPO/.github/workflows/cma-gate.yml" ]
+  [ ! -f "$TMP_REPO/.github/workflows/4wd-gate.yml" ]
 }
 
 @test "init: refuses to overwrite without --force" {
@@ -118,35 +118,35 @@ teardown() {
 
 @test "init: --force overwrites" {
   bash "$REPO_ROOT/bin/init.sh" "$TMP_REPO" >/dev/null
-  echo '{"gate":{"command":"custom"}}' > "$TMP_REPO/.merge-agent.json"
+  echo '{"gate":{"command":"custom"}}' > "$TMP_REPO/.4wd.json"
   run bash "$REPO_ROOT/bin/init.sh" "$TMP_REPO" --force
   [ "$status" -eq 0 ]
   # File was overwritten with the template content (no "custom")
-  ! grep -q '"command":"custom"' "$TMP_REPO/.merge-agent.json"
+  ! grep -q '"command":"custom"' "$TMP_REPO/.4wd.json"
 }
 
-@test "init: --merge preserves user fields in .merge-agent.json" {
+@test "init: --merge preserves user fields in .4wd.json" {
   bash "$REPO_ROOT/bin/init.sh" "$TMP_REPO" >/dev/null
   # User adds a custom field after init
-  jq '. + {"myCustom":"keepme"}' "$TMP_REPO/.merge-agent.json" > "$TMP_REPO/.merge-agent.json.tmp"
-  mv "$TMP_REPO/.merge-agent.json.tmp" "$TMP_REPO/.merge-agent.json"
+  jq '. + {"myCustom":"keepme"}' "$TMP_REPO/.4wd.json" > "$TMP_REPO/.4wd.json.tmp"
+  mv "$TMP_REPO/.4wd.json.tmp" "$TMP_REPO/.4wd.json"
   # Re-run with --merge; custom field must survive
   run bash "$REPO_ROOT/bin/init.sh" "$TMP_REPO" --merge
   [ "$status" -eq 0 ]
-  run jq -r '.myCustom' "$TMP_REPO/.merge-agent.json"
+  run jq -r '.myCustom' "$TMP_REPO/.4wd.json"
   [ "$output" = "keepme" ]
 }
 
-@test "init: appends .merge-agent.lock/ to .gitignore" {
+@test "init: appends .4wd.lock/ to .gitignore" {
   bash "$REPO_ROOT/bin/init.sh" "$TMP_REPO" >/dev/null
-  grep -qxF '.merge-agent.lock/' "$TMP_REPO/.gitignore"
+  grep -qxF '.4wd.lock/' "$TMP_REPO/.gitignore"
 }
 
-@test "init: does not duplicate .merge-agent.lock entry on re-run" {
+@test "init: does not duplicate .4wd.lock entry on re-run" {
   bash "$REPO_ROOT/bin/init.sh" "$TMP_REPO" >/dev/null
   bash "$REPO_ROOT/bin/init.sh" "$TMP_REPO" --force >/dev/null
   local count
-  count=$(grep -c '^\.merge-agent\.lock' "$TMP_REPO/.gitignore" || true)
+  count=$(grep -c '^\.4wd\.lock' "$TMP_REPO/.gitignore" || true)
   [ "$count" -eq 1 ]
 }
 
@@ -156,16 +156,16 @@ teardown() {
   [[ "$output" == *"github.com/WANDERCOLTD/example/settings/branches"* ]]
 }
 
-@test "init: detects node stack and emits npm test in .merge-agent.json" {
+@test "init: detects node stack and emits npm test in .4wd.json" {
   echo '{"name":"x","scripts":{"test":"jest"}}' > "$TMP_REPO/package.json"
   bash "$REPO_ROOT/bin/init.sh" "$TMP_REPO" >/dev/null
-  run jq -r '.gate.command' "$TMP_REPO/.merge-agent.json"
+  run jq -r '.gate.command' "$TMP_REPO/.4wd.json"
   [ "$output" = "npm test" ]
 }
 
-@test "init: detects python stack and emits pytest in .merge-agent.json" {
+@test "init: detects python stack and emits pytest in .4wd.json" {
   echo '[project]' > "$TMP_REPO/pyproject.toml"
   bash "$REPO_ROOT/bin/init.sh" "$TMP_REPO" >/dev/null
-  run jq -r '.gate.command' "$TMP_REPO/.merge-agent.json"
+  run jq -r '.gate.command' "$TMP_REPO/.4wd.json"
   [ "$output" = "pytest -q" ]
 }

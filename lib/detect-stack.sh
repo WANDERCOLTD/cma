@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lib/detect-stack.sh — pick the right cma stack template for a project.
+# lib/detect-stack.sh — pick the right 4wd stack template for a project.
 #
 # Usage (sourced):
 #   . "${CLAUDE_PLUGIN_ROOT}/lib/detect-stack.sh"
@@ -62,11 +62,11 @@ is_supported_stack() {
   case "$1" in
     node|python|shell) return 0 ;;
     rust|go|ruby|jvm)
-      echo "cma init: --stack=$1 is recognised but not implemented in v0.4 — defaults to shell." >&2
+      echo "4wd init: --stack=$1 is recognised but not implemented in v0.4 — defaults to shell." >&2
       return 1
       ;;
     *)
-      echo "cma init: --stack=$1 is not a known stack. Supported: node, python, shell." >&2
+      echo "4wd init: --stack=$1 is not a known stack. Supported: node, python, shell." >&2
       return 1
       ;;
   esac

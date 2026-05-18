@@ -17,9 +17,9 @@ interface UseRepoConfigArgs {
  *   `strict: true` and the repo itself exposing the `mergeQueue` toggle.
  *   The REST API surface for merge-queue settings is limited; we infer
  *   from the presence of the protection rule. v0.3.2 will switch to GraphQL.
- * - `cmaDisabled`: cma keeps this in repo's `.merge-agent.json`. The dashboard
+ * - `fourWdDisabled`: 4wd keeps this in the repo's `.4wd.json`. The dashboard
  *   has no FS access — leave as `false` for now and surface a TODO.
- * - `cmaVersion`: bundled with the dashboard, not the repo. Use the package
+ * - `fourWdVersion`: bundled with the dashboard, not the repo. Use the package
  *   version baked into the build via a Vite env var (defaults to "dev").
  */
 export function useRepoConfig({
@@ -69,10 +69,10 @@ export function useRepoConfig({
         branchProtectionEnabled,
         mergeQueueEnabled,
         // TODO(v0.3.2): Dashboard has no file-system access to read
-        // .merge-agent.json from the repo root. A future iteration could:
-        //   - Use the Contents API to GET .merge-agent.json and parse it; or
+        // .4wd.json from the repo root. A future iteration could:
+        //   - Use the Contents API to GET .4wd.json and parse it; or
         //   - Read from a hosted log endpoint.
-        cmaDisabled: false,
+        fourWdDisabled: false,
         cmaVersion: __CMA_DASHBOARD_VERSION__,
       };
     },
