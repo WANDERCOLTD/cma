@@ -45,8 +45,17 @@ teardown() {
   [[ "$output" == *"bash run-my-thing.sh"* ]]
 }
 
-@test "status shows lock_state:{held:false} when no lock present" {
+@test "status shows IDLE when no lock present" {
   write_config '{ "gate": { "command": "true" } }'
-  run bash "$REPO_ROOT/bin/merge-status.sh" "$TMP_REPO"
-  [[ "$output" == *'"held":false'* ]]
+  run env NO_COLOR=1 bash "$REPO_ROOT/bin/merge-status.sh" "$TMP_REPO"
+  [[ "$output" == *"IDLE"* ]]
+}
+
+@test "status shows held banner when lock present" {
+  . "$REPO_ROOT/lib/lock.sh"
+  write_config '{ "gate": { "command": "true" } }'
+  seed_lock "$TMP_REPO/.merge-agent.lock" "$$" "feat/x" "$(now_epoch)"
+  run env NO_COLOR=1 bash "$REPO_ROOT/bin/merge-status.sh" "$TMP_REPO"
+  [[ "$output" == *"HELD"* ]]
+  [[ "$output" == *"feat/x"* ]]
 }
