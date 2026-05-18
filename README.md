@@ -91,6 +91,15 @@ Deferred (post-v0.1):
 - Remote/VM gate runner (`runOn: "ssh"`).
 - Long-lived queue subagent (waiting on Claude Code platform fixes for durable cross-session messaging).
 
+## Kill switch
+
+`cma` is always opt-in by invocation — `/vm-cp`, `git push`, and other workflows keep working untouched whether the plugin is installed or not. For when you want the slash commands themselves to no-op without uninstalling the plugin:
+
+- **Per-repo:** set `"disabled": true` in `.merge-agent.json`. `/cma:merge` exits 0 with `cma: disabled via config — use your normal push flow` and never touches git.
+- **Per-invocation:** `CMA_DISABLE=1` env var. Overrides the config field. Useful when you want to temporarily bypass without editing the file.
+
+`/cma:status` always works and shows the current state at the top (`STATE: ENABLED` or `STATE: DISABLED via …`).
+
 ## License
 
 MIT. See [LICENSE](./LICENSE).

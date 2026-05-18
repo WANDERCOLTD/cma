@@ -10,6 +10,7 @@
 set -u
 
 # Defaults
+CONFIG_DISABLED="false"
 CONFIG_GATE_COMMAND=""
 CONFIG_GATE_RUN_ON="local"
 CONFIG_GATE_TIMEOUT="900"
@@ -40,6 +41,8 @@ config_load() {
     echo "merge-agent: $cfg is not valid JSON" >&2
     return 1
   fi
+
+  CONFIG_DISABLED=$(jq -r '.disabled // false' "$cfg")
 
   CONFIG_GATE_COMMAND=$(jq -r '.gate.command // ""' "$cfg")
   if [ -z "$CONFIG_GATE_COMMAND" ]; then

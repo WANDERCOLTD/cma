@@ -16,6 +16,22 @@ ROOT="${1:?repo root required as \$1}"
 # ── pre-flight ──────────────────────────────────────────────────────────────
 cd "$ROOT" || { echo "merge-agent: cannot cd to $ROOT"; exit 1; }
 
+# Env-var kill switch (takes precedence over config).
+if [ "${CMA_DISABLE:-0}" = "1" ]; then
+  echo "cma: disabled via CMA_DISABLE=1 — use your normal push flow (e.g. /vm-cp, git push)"
+  exit 0
+fi
+
+if ! config_load "$ROOT"; then
+  exit 1
+fi
+
+# Config-level kill switch.
+if [ "$CONFIG_DISABLED" = "true" ]; then
+  echo "cma: disabled via .merge-agent.json (\"disabled\": true) — use your normal push flow"
+  exit 0
+fi
+
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 if [ -z "$CURRENT_BRANCH" ] || [ "$CURRENT_BRANCH" = "HEAD" ]; then
   echo "merge-agent: ERROR — could not determine current branch (detached HEAD?)"
@@ -23,10 +39,6 @@ if [ -z "$CURRENT_BRANCH" ] || [ "$CURRENT_BRANCH" = "HEAD" ]; then
 fi
 if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ]; then
   echo "merge-agent: ERROR — refusing to merge $CURRENT_BRANCH into itself. Check out a feature branch first."
-  exit 1
-fi
-
-if ! config_load "$ROOT"; then
   exit 1
 fi
 

@@ -17,9 +17,21 @@ fi
 
 LOCK_DIR="$ROOT/$CONFIG_LOCK_FILE"
 
-echo "merge-agent — status"
+echo "cma — status"
 echo "──────────────────────"
+
+# Loud disabled banner so the state is obvious at a glance.
+if [ "${CMA_DISABLE:-0}" = "1" ]; then
+  echo "STATE: DISABLED via CMA_DISABLE=1 env var (env var wins over config)"
+elif [ "$CONFIG_DISABLED" = "true" ]; then
+  echo "STATE: DISABLED via .merge-agent.json (\"disabled\": true)"
+else
+  echo "STATE: ENABLED"
+fi
+echo
+
 echo "config:"
+echo "  disabled:            $CONFIG_DISABLED"
 echo "  gate.command:        $CONFIG_GATE_COMMAND"
 echo "  gate.runOn:          $CONFIG_GATE_RUN_ON"
 echo "  gate.timeoutSeconds: $CONFIG_GATE_TIMEOUT"

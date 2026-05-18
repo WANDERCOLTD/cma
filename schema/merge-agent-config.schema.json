@@ -6,6 +6,11 @@
   "required": ["gate"],
   "additionalProperties": false,
   "properties": {
+    "disabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Kill switch. When true, /cma:merge exits 0 immediately without touching git. The CMA_DISABLE=1 env var has the same effect at invocation time and overrides this field."
+    },
     "gate": {
       "type": "object",
       "required": ["command"],
