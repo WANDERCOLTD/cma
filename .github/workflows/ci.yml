@@ -51,8 +51,14 @@ jobs:
           fi
 
       - name: Run BATS
+        shell: bash
         run: |
-          test/bats-core/bin/bats --print-output-on-failure --formatter tap test/*.bats
+          shopt -s nullglob
+          files=(test/*.bats)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "no .bats files found in test/"; exit 1
+          fi
+          test/bats-core/bin/bats --print-output-on-failure --formatter tap "${files[@]}"
 
   ratchet:
     runs-on: ubuntu-latest
