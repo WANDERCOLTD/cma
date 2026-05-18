@@ -53,6 +53,37 @@
         }
       }
     },
+    "merge": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["direct-push", "merge-queue"],
+          "default": "direct-push",
+          "description": "How the rebased branch lands on main. \"direct-push\" (default) runs git push origin HEAD:main. \"merge-queue\" opens a PR and submits to GitHub Merge Queue via the gh CLI — required when branch protection on main demands a PR."
+        },
+        "ghmq": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Merge-queue tuning, only used when mode=\"merge-queue\".",
+          "properties": {
+            "pollIntervalSeconds": {
+              "type": "integer",
+              "minimum": 5,
+              "default": 30,
+              "description": "How often to poll the queued PR's state."
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "minimum": 60,
+              "default": 1800,
+              "description": "Give up waiting for the queue to merge the PR after this many seconds."
+            }
+          }
+        }
+      }
+    },
     "branchProtection": {
       "type": "string",
       "enum": ["off", "warn", "error"],

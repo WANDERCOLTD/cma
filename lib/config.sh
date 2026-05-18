@@ -26,6 +26,9 @@ CONFIG_RATCHET_COMMIT_MESSAGE="chore: ratchet update after merge"
 CONFIG_BRANCH_PROTECTION="warn"
 CONFIG_LOCK_FILE=".merge-agent.lock"
 CONFIG_LOCK_TTL="1800"
+CONFIG_MERGE_MODE="direct-push"
+CONFIG_GHMQ_POLL_INTERVAL="30"
+CONFIG_GHMQ_TIMEOUT="1800"
 
 config_load() {
   local root="$1"
@@ -67,12 +70,24 @@ config_load() {
   CONFIG_LOCK_FILE=$(jq -r '.lockFile // ".merge-agent.lock"' "$cfg")
   CONFIG_LOCK_TTL=$(jq -r '.lockTtlSeconds // 1800' "$cfg")
 
-  # v0.1 only supports local. Reject ssh/container loudly so adopters know what's deferred.
+  CONFIG_MERGE_MODE=$(jq -r '.merge.mode // "direct-push"' "$cfg")
+  CONFIG_GHMQ_POLL_INTERVAL=$(jq -r '.merge.ghmq.pollIntervalSeconds // 30' "$cfg")
+  CONFIG_GHMQ_TIMEOUT=$(jq -r '.merge.ghmq.timeoutSeconds // 1800' "$cfg")
+
+  case "$CONFIG_MERGE_MODE" in
+    direct-push|merge-queue) ;;
+    *)
+      echo "merge-agent: merge.mode=\"$CONFIG_MERGE_MODE\" is unknown — use \"direct-push\" or \"merge-queue\"." >&2
+      return 1
+      ;;
+  esac
+
+  # v0.2 still only supports local gate execution. Remote runners land in v0.3.
   case "$CONFIG_GATE_RUN_ON" in
     local) ;;
-    ssh|container|vm)
-      echo "merge-agent: gate.runOn=\"$CONFIG_GATE_RUN_ON\" is not supported in v0.1 — only \"local\" is implemented." >&2
-      echo "Remote/VM gate runner lands in v0.2 — see README." >&2
+    ssh|container|vm|gcloud-iap)
+      echo "merge-agent: gate.runOn=\"$CONFIG_GATE_RUN_ON\" is not supported in v0.2 — only \"local\" is implemented." >&2
+      echo "Remote/VM gate runner lands in v0.3 — see README." >&2
       return 1
       ;;
     *)

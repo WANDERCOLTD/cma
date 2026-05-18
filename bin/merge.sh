@@ -12,6 +12,7 @@ ROOT="${1:?repo root required as \$1}"
 . "$PLUGIN_ROOT/lib/lock.sh"
 . "$PLUGIN_ROOT/lib/config.sh"
 . "$PLUGIN_ROOT/lib/ratchet.sh"
+. "$PLUGIN_ROOT/lib/ghmq.sh"
 
 # ── pre-flight ──────────────────────────────────────────────────────────────
 cd "$ROOT" || { echo "merge-agent: cannot cd to $ROOT"; exit 1; }
@@ -113,18 +114,55 @@ if [ "$gate_rc" -ne 0 ]; then
   exit 1
 fi
 
-# ── push ────────────────────────────────────────────────────────────────────
-echo "merge-agent: pushing $CURRENT_BRANCH to origin/main"
-if ! git push origin "HEAD:main"; then
-  echo "merge-agent: PUSH FAILED — non-fast-forward or branch protection rejected"
-  echo "merge-agent: your branch is rebased locally; re-run /merge to retry"
-  exit 1
-fi
+# ── push or submit to merge queue ───────────────────────────────────────────
+MERGED_SHA=""
 
-MERGED_SHA=$(git rev-parse HEAD)
+case "$CONFIG_MERGE_MODE" in
+  direct-push)
+    echo "merge-agent: pushing $CURRENT_BRANCH to origin/main (mode=direct-push)"
+    if ! git push origin "HEAD:main"; then
+      echo "merge-agent: PUSH FAILED — non-fast-forward or branch protection rejected"
+      echo "merge-agent: your branch is rebased locally; re-run /cma:merge to retry"
+      exit 1
+    fi
+    MERGED_SHA=$(git rev-parse HEAD)
 
-# ── optional ratchet re-lock ────────────────────────────────────────────────
-ratchet_relock_if_changed "$ROOT" "$CONFIG_RATCHET_FILE" "$CONFIG_RATCHET_LOCK_COMMAND" "$CONFIG_RATCHET_COMMIT_MESSAGE"
+    # Optional ratchet re-lock (direct-push only — see merge-queue notes below).
+    ratchet_relock_if_changed "$ROOT" "$CONFIG_RATCHET_FILE" "$CONFIG_RATCHET_LOCK_COMMAND" "$CONFIG_RATCHET_COMMIT_MESSAGE"
+    ;;
+
+  merge-queue)
+    if ! ghmq_preflight; then exit 1; fi
+
+    echo "merge-agent: submitting $CURRENT_BRANCH via GitHub Merge Queue"
+    if ! ghmq_push_feature_branch "$CURRENT_BRANCH"; then exit 1; fi
+
+    pr_number=$(ghmq_open_or_reuse_pr "$CURRENT_BRANCH")
+    if [ -z "$pr_number" ]; then
+      echo "merge-agent: failed to open/find PR for $CURRENT_BRANCH" >&2
+      exit 1
+    fi
+    echo "merge-agent: PR #$pr_number opened/reused"
+
+    if ! ghmq_submit_to_queue "$pr_number"; then exit 1; fi
+
+    if ! ghmq_poll_until_done "$pr_number" "$CONFIG_GHMQ_POLL_INTERVAL" "$CONFIG_GHMQ_TIMEOUT"; then
+      exit 1
+    fi
+
+    # Fetch the post-merge SHA from origin.
+    git fetch origin main >/dev/null 2>&1
+    MERGED_SHA=$(git rev-parse origin/main)
+
+    # Ratchet relock is INTENTIONALLY SKIPPED in merge-queue mode.
+    # The GHA merge-queue workflow has its own ratchet step that opens a
+    # follow-up PR rather than pushing direct to main (which would defeat
+    # the queue). See examples/github-actions/merge-queue.yml.
+    if [ -n "$CONFIG_RATCHET_LOCK_COMMAND" ]; then
+      echo "merge-agent: ratchet relock skipped in merge-queue mode (GHA workflow owns it)"
+    fi
+    ;;
+esac
 
 # ── log + done ──────────────────────────────────────────────────────────────
 LOG_DIR="${CLAUDE_PLUGIN_DATA:-$ROOT/.merge-agent-data}"
