@@ -89,23 +89,33 @@ To inspect state:
 /cma:status
 ```
 
+Colorised output with config, lock state, branch-protection status, and a sparkline-style history of recent merges (gate duration bar + ✓/✗ result chip).
+
+To open the live web dashboard scoped to the current repo:
+
+```
+/cma:dashboard
+```
+
+Opens **https://cma-dashboard-eight.vercel.app** in your default browser with `?repo=<owner>/<name>` set so it immediately scopes to the project you're in. Override the URL via `dashboard.url` in `.merge-agent.json` if you self-host the dashboard.
+
 ## Pair with GitHub Merge Queue
 
 This plugin handles the developer-experience layer (the `/cma:merge` invocation, lock state, gate streaming). For repos with two or more parallel contributors, the real serialisation primitive is **GitHub Merge Queue + branch protection** — the plugin doesn't try to replace it.
 
 See [`examples/github-actions/`](./examples/github-actions/) for a working GHA template that uses GHMQ + a remote-VM gate runner. Use both together for the strongest setup.
 
-## What's in v0.1
+## Releases
 
-- `/cma:merge` and `/cma:status` slash commands.
-- File-based PID-stamped lock (atomic `mkdir`).
-- Local gate runner.
-- Optional ratchet re-lock on green.
-- `SessionStart` hook that warns if `main` has no branch protection.
-
-Deferred (post-v0.1):
-- Remote/VM gate runner (`runOn: "ssh"`).
-- Long-lived queue subagent (waiting on Claude Code platform fixes for durable cross-session messaging).
+| Version | What | Status |
+|---------|------|--------|
+| **v0.1.0** | `/cma:merge` + `/cma:status` slash commands. File-based PID-stamped lock (atomic `mkdir`). Local gate runner. Optional ratchet re-lock on green. `SessionStart` hook. | ✅ Shipped |
+| **v0.1.1** | Kill switch (`"disabled": true` in config, `CMA_DISABLE=1` env var). | ✅ Shipped |
+| **v0.2.0** | BATS test suite (42 tests, Mac + Ubuntu CI matrix). Shellcheck + ratchet gate. Single-concern commit-msg hook. | ✅ Shipped |
+| **v0.2.1** | GHMQ submit-mode (`merge.mode: "merge-queue"`). `gh` ≥ 2.46 preflight. Ratchet relock intentionally skipped in queue mode. | ✅ Shipped |
+| **v0.3.0** | Web dashboard (Vite + React + shadcn/ui). `/cma:dashboard` slash command. Hosted at cma-dashboard-eight.vercel.app. | 🚧 In progress |
+| **v0.4** | Remote gate runner (`runOn: "ssh"` + `"gcloud-iap"`). | 📋 Planned |
+| **v0.5** | Long-lived queue subagent (waiting on Claude Code durable cross-session messaging). | ⏸️ Parked |
 
 ## Kill switch
 
