@@ -32,6 +32,32 @@ All notable changes to 4wd are documented here. The format follows [Keep a Chang
 
 ---
 
+## [1.0.0] — 2026-05-18
+
+### Changed
+
+- **Project renamed `cma` → `4wd`** (Claude Merge Agent → 4WD). Tagline: *Drift control for your main branch.*
+- GitHub repo: `WANDERCOLTD/cma` → `WANDERCOLTD/4wd` (the old URL is a permanent GitHub redirect).
+- Plugin manifest `name`: `cma` → `4wd`.
+- Slash commands: `/cma:merge`, `/cma:status`, `/cma:dashboard`, `/cma:init` → `/4wd:*`.
+- Config file: `.merge-agent.json` → `.4wd.json`.
+- Lock directory: `.merge-agent.lock/` → `.4wd.lock/`.
+- Env-var kill switch: `CMA_DISABLE` → `FWD_DISABLE`.
+- Schema file: `schema/merge-agent-config.schema.json` → `schema/4wd-config.schema.json`.
+- GHA template: `examples/*/cma-gate.yml` → `examples/*/4wd-gate.yml`.
+- Vercel project: `cma-dashboard` → `4wd-dashboard`. Canonical alias: **`4wd-dashboard.vercel.app`**.
+
+### Added
+
+- **`web/vercel.json`** locks production deploys to manual-only — pushes to `main` no longer auto-trigger Vercel builds. Production lands via `vercel --prod` from `web/`.
+
+### Notes
+
+- No external users at the time of rename, no marketplace listing yet. Clean break.
+- Existing `.merge-agent.json` files in adopter repos must be renamed manually: `git mv .merge-agent.json .4wd.json && commit`.
+
+---
+
 ## [0.4.0] — 2026-05-18
 
 ### Added
