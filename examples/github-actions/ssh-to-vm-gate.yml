@@ -1,0 +1,87 @@
+name: merge-gate-via-vm
+
+# Variant of merge-queue.yml that runs the canonical gate on a long-running
+# VM (Cloud Run, Compute Engine, on-prem) via SSH or IAP instead of on the
+# GHA runner itself. Use when:
+#   - your gate needs a database / cache / service that's expensive to spin up,
+#   - your gate runs much faster on the VM than on a cold GHA runner,
+#   - you want the GHA verdict to match your local /cma:merge gate byte-for-byte.
+
+on:
+  pull_request:
+    branches: [main]
+  merge_group:
+    types: [checks_requested]
+
+concurrency:
+  group: merge-gate-vm-${{ github.event_name == 'merge_group' && github.event.merge_group.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  gate-on-vm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ── Option A: plain SSH ─────────────────────────────────────────────
+      # Use this if your VM is reachable on the public internet (with a key).
+      - name: Set up SSH
+        if: ${{ vars.GATE_TRANSPORT == 'ssh' }}
+        env:
+          GATE_SSH_KEY: ${{ secrets.GATE_SSH_KEY }}
+          GATE_SSH_KNOWN_HOSTS: ${{ secrets.GATE_SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$GATE_SSH_KEY" | base64 -d > ~/.ssh/id_gate
+          chmod 600 ~/.ssh/id_gate
+          echo "$GATE_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Run gate over SSH
+        if: ${{ vars.GATE_TRANSPORT == 'ssh' }}
+        env:
+          GATE_VM_HOST: ${{ secrets.GATE_VM_HOST }}
+          GATE_REMOTE_PATH: ${{ vars.GATE_REMOTE_PATH }}
+          GATE_COMMAND: ${{ vars.GATE_COMMAND }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
+        run: |
+          ssh -i ~/.ssh/id_gate -o ServerAliveInterval=30 "$GATE_VM_HOST" bash -lc "
+            set -euo pipefail
+            cd '$GATE_REMOTE_PATH'
+            git fetch origin
+            git checkout '$PR_HEAD_SHA'
+            $GATE_COMMAND
+          "
+
+      # ── Option B: Google Cloud IAP tunnel ───────────────────────────────
+      # Use when the VM is behind an IAP-protected bastion (no public IP).
+      # Requires google-github-actions/auth + a workload-identity binding or
+      # a service-account key in secrets.
+      - name: Auth to GCP
+        if: ${{ vars.GATE_TRANSPORT == 'gcloud-iap' }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIP }}
+          service_account: ${{ vars.GCP_SA }}
+
+      - name: Set up gcloud
+        if: ${{ vars.GATE_TRANSPORT == 'gcloud-iap' }}
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Run gate via IAP tunnel
+        if: ${{ vars.GATE_TRANSPORT == 'gcloud-iap' }}
+        env:
+          GATE_VM_NAME: ${{ vars.GATE_VM_NAME }}
+          GATE_VM_ZONE: ${{ vars.GATE_VM_ZONE }}
+          GATE_PROJECT: ${{ vars.GATE_PROJECT }}
+          GATE_REMOTE_PATH: ${{ vars.GATE_REMOTE_PATH }}
+          GATE_COMMAND: ${{ vars.GATE_COMMAND }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
+        run: |
+          gcloud compute ssh "$GATE_VM_NAME" \
+            --zone="$GATE_VM_ZONE" \
+            --project="$GATE_PROJECT" \
+            --tunnel-through-iap \
+            --command="cd '$GATE_REMOTE_PATH' && git fetch origin && git checkout '$PR_HEAD_SHA' && $GATE_COMMAND"

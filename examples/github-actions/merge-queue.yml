@@ -1,0 +1,54 @@
+name: merge-gate
+
+on:
+  pull_request:
+    branches: [main]
+  merge_group:
+    types: [checks_requested]
+
+# Concurrency: cancel superseded PR runs, but never cancel merge_group runs.
+# A merge_group run that is interrupted blocks the queue and leaves main
+# without a known-good gate result.
+concurrency:
+  group: merge-gate-${{ github.event_name == 'merge_group' && github.event.merge_group.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so rebase / merge-base operations work cleanly.
+          fetch-depth: 0
+
+      - name: Configure node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          # Adapt to your package manager. Drop the cache line for non-Node repos.
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Run canonical gate
+        # MUST match the `gate.command` in your .merge-agent.json so the local
+        # /cma:merge run and the GHMQ run agree on the verdict.
+        run: bash scripts/deploy-gate.sh dev
+
+      - name: Lock ratchet (informational only)
+        if: github.event_name == 'merge_group'
+        # GHMQ runs against the rebased candidate. If the ratchet improved,
+        # the lock-command updates the file in-place but the merge_group
+        # commit is already finalised — so we emit a follow-up PR rather
+        # than try to mutate the queued commit. Or skip entirely and rely on
+        # the cma plugin to do this on the local /cma:merge path.
+        run: |
+          if [ -x scripts/check-ratchet.sh ]; then
+            bash scripts/check-ratchet.sh lock
+            if ! git diff --quiet -- .ratchet.json; then
+              echo "::notice::ratchet improved — open a follow-up PR to lock the new baseline"
+            fi
+          fi
