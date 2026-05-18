@@ -113,7 +113,7 @@ See [`examples/github-actions/`](./examples/github-actions/) for a working GHA t
 | **v0.1.1** | Kill switch (`"disabled": true` in config, `CMA_DISABLE=1` env var). | ✅ Shipped |
 | **v0.2.0** | BATS test suite (42 tests, Mac + Ubuntu CI matrix). Shellcheck + ratchet gate. Single-concern commit-msg hook. | ✅ Shipped |
 | **v0.2.1** | GHMQ submit-mode (`merge.mode: "merge-queue"`). `gh` ≥ 2.46 preflight. Ratchet relock intentionally skipped in queue mode. | ✅ Shipped |
-| **v0.3.0** | Web dashboard (Vite + React + shadcn/ui). `/cma:dashboard` slash command. Hosted at cma-dashboard-eight.vercel.app. | 🚧 In progress |
+| **v0.3.0** | Web dashboard (Vite + React + shadcn/ui). `/cma:dashboard` slash command. Live GitHub data via Octokit + sessionStorage PAT. Hosted at cma-dashboard-eight.vercel.app. | ✅ Shipped |
 | **v0.4** | Remote gate runner (`runOn: "ssh"` + `"gcloud-iap"`). | 📋 Planned |
 | **v0.5** | Long-lived queue subagent (waiting on Claude Code durable cross-session messaging). | ⏸️ Parked |
 
@@ -125,6 +125,21 @@ See [`examples/github-actions/`](./examples/github-actions/) for a working GHA t
 - **Per-invocation:** `CMA_DISABLE=1` env var. Overrides the config field. Useful when you want to temporarily bypass without editing the file.
 
 `/cma:status` always works and shows the current state at the top (`STATE: ENABLED` or `STATE: DISABLED via …`).
+
+## Distribution
+
+Today: install via the GitHub marketplace path —
+
+```bash
+claude plugin marketplace add WANDERCOLTD/cma
+claude plugin install cma
+```
+
+Submission to the official `claude.com/plugins` listing is open at https://platform.claude.com/plugins/submit. The repo is ready: manifest at `.claude-plugin/plugin.json`, MIT license, semver tags (v0.3.0 latest), CI green on `ubuntu-latest` + `macos-latest`, 42 BATS tests, README + CONTRIBUTING.
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md). TL;DR: one concern per commit, ratchet locks the win, tests come with features, CI is canonical.
 
 ## License
 
