@@ -37,8 +37,11 @@ unstub_gh() {
 
 @test "ghmq_preflight without gh on PATH → exits 1 with install hint" {
   unstub_gh
-  # Also block the real gh by clearing PATH back to a minimal sane set.
-  run env -i PATH="$STUB_DIR:/usr/bin:/bin" bash -c ". $REPO_ROOT/lib/ghmq.sh && ghmq_preflight"
+  # PATH must contain ONLY the (now-empty) stub dir so the real gh — which
+  # GHA runners pre-install at /usr/bin/gh on Ubuntu and /opt/homebrew/bin/gh
+  # on macOS — is not reachable. `command` / `[` / etc. are bash builtins,
+  # so we don't need /bin or /usr/bin on PATH for `command -v gh` to work.
+  run env -i PATH="$STUB_DIR" /bin/bash -c ". $REPO_ROOT/lib/ghmq.sh && ghmq_preflight"
   [ "$status" -eq 1 ]
   [[ "$output" == *"gh CLI is required"* ]]
 }

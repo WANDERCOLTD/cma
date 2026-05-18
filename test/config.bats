@@ -42,11 +42,12 @@ teardown() {
   [ "$CONFIG_BRANCH_PROTECTION" = "warn" ]
 }
 
-@test "config_load with runOn:ssh → exits 1 (deferred to v0.2)" {
+@test "config_load with runOn:ssh → exits 1 (deferred to v0.3)" {
   write_config '{ "gate": { "command": "true", "runOn": "ssh" } }'
   run config_load "$TMP_REPO"
   [ "$status" -eq 1 ]
-  [[ "$output" == *"not supported in v0.1"* ]]
+  [[ "$output" == *"not supported in v0.2"* ]]
+  [[ "$output" == *"lands in v0.3"* ]]
 }
 
 @test "config_load with disabled:true → exits 0, exports CONFIG_DISABLED=true" {
