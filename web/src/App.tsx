@@ -3,6 +3,10 @@ import { MergeDetailSheet } from "@/components/MergeDetailSheet";
 import { NavSheet } from "@/components/NavSheet";
 import { Queue } from "@/components/Queue";
 import { RecentMerges } from "@/components/RecentMerges";
+import {
+  RepoPickerScreen,
+  readStoredRepoSlug,
+} from "@/components/RepoPickerScreen";
 import { SettingsSheet } from "@/components/SettingsSheet";
 import { SetupScreen } from "@/components/SetupScreen";
 import { Toaster } from "@/components/Toaster";
@@ -43,7 +47,28 @@ export function App(): JSX.Element {
   const { isPublicMode, signOut } = useGitHubAuth();
   const { toast } = useToast();
 
-  const repoSlug = React.useMemo(() => parseRepoFromUrl(), []);
+  // Re-read the URL on history changes (the RepoPickerScreen uses pushState +
+  // a synthetic popstate to navigate without a full reload).
+  const [searchTick, setSearchTick] = React.useState(0);
+  React.useEffect(() => {
+    const onPop = (): void => setSearchTick((n) => n + 1);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  const repoSlug = React.useMemo(() => parseRepoFromUrl(), [searchTick]);
+
+  // Auto-rehydrate: if the user picked a repo earlier this session and we
+  // don't have one in the URL, jump straight to it. Saves a click.
+  React.useEffect(() => {
+    if (repoSlug) return;
+    const stored = readStoredRepoSlug();
+    if (!stored) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("repo", stored);
+    window.history.replaceState(null, "", url.toString());
+    setSearchTick((n) => n + 1);
+  }, [repoSlug]);
 
   // Track whether the user has explicitly chosen public mode. Distinct from
   // "no token in storage yet" — without an ack, we still show the setup screen.
@@ -74,6 +99,8 @@ export function App(): JSX.Element {
 
   // Setup gate: show until we have either a token or an explicit "public mode" ack.
   const needsSetup = isPublicMode && !publicAck;
+  // Picker gate: we've got auth (or public-ack) but no repo yet.
+  const needsPicker = !needsSetup && !repoSlug;
 
   // Always declare hooks — they no-op when the inputs are empty.
   const owner = repoSlug?.owner ?? "";
@@ -173,27 +200,12 @@ export function App(): JSX.Element {
     });
   }, [toast]);
 
-  // 1. No repo in URL — always show setup (which carries a "no repo" hint).
-  if (!repoSlug) {
-    return (
-      <>
-        <SetupScreen
-          repoSlug={null}
-          onContinuePublic={
-            isPublicMode && !publicAck ? acknowledgePublic : undefined
-          }
-        />
-        <Toaster />
-      </>
-    );
-  }
-
-  // 2. Repo is set but no token + no public ack — gate on setup.
+  // 1. No token and no public ack — show setup. (Picker comes next.)
   if (needsSetup) {
     return (
       <>
         <SetupScreen
-          repoSlug={`${repoSlug.owner}/${repoSlug.name}`}
+          repoSlug={repoSlug ? `${repoSlug.owner}/${repoSlug.name}` : null}
           onContinuePublic={acknowledgePublic}
         />
         <Toaster />
@@ -201,6 +213,20 @@ export function App(): JSX.Element {
     );
   }
 
+  // 2. Auth (or public-ack) but no repo selected — show the picker.
+  if (needsPicker) {
+    return (
+      <>
+        <RepoPickerScreen isPublicMode={isPublicMode} />
+        <Toaster />
+      </>
+    );
+  }
+
+  // Guarded above by `needsPicker` — repoSlug is non-null past this point.
+  if (!repoSlug) {
+    return null as unknown as JSX.Element;
+  }
   const repo: RepoConfig = repoQuery.data ?? {
     ...FALLBACK_REPO,
     owner: repoSlug.owner,

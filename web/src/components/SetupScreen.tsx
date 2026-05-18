@@ -128,14 +128,9 @@ export function SetupScreen({
         </div>
 
         {!repoSlug && (
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
-            <p className="font-medium text-amber-300">No repository configured</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Append <code className="font-mono">?repo=owner/name</code> to the
-              URL, or run <code className="font-mono">/cma:dashboard</code>{" "}
-              from a git repo to launch the dashboard pre-scoped.
-            </p>
-          </div>
+          <p className="text-xs text-muted-foreground">
+            You&apos;ll pick a repository after connecting.
+          </p>
         )}
       </div>
     </div>
