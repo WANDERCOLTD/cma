@@ -1,6 +1,6 @@
 {
   "name": "cma",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Claude Merge Agent — serialised merge-to-main with a project-configurable canonical gate. Pairs with GitHub Merge Queue.",
   "author": "WANDERCOLTD",
   "license": "MIT",
