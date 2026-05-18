@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# commit-msg hook — reject multi-concern commits (ported from WANDERCOLTD/HF).
+#
+# Flags commit subjects that span multiple cma subsystems. Bypass with --no-verify.
+# Enable via `git config core.hooksPath .githooks`.
+
+set -u
+
+[ -f .git/MERGE_HEAD ] && exit 0
+
+MSG_FILE="$1"
+SUBJECT=$(head -1 "$MSG_FILE")
+[ -z "$SUBJECT" ] && exit 0
+
+case "$SUBJECT" in
+  fixup!*|squash!*|amend!*) exit 0 ;;
+esac
+
+# Subsystem keywords. Subject hitting 3+ of these (or 2+ with explicit + / & conjunction)
+# is flagged. Keywords are deliberately conservative to avoid false positives.
+SUBSYSTEMS=(
+  "merge:merge\\.sh|/cma:merge|merge.flow"
+  "status:status\\.sh|/cma:status"
+  "lock:lock\\.sh|file.lock|mkdir.lock"
+  "config:config\\.sh|merge-agent\\.json"
+  "ratchet:ratchet\\.sh|\\.ratchet\\.json"
+  "ghmq:merge.queue|gh.pr.create|--merge-queue"
+  "gate:gate\\.sh|gate.command|gate.runner"
+  "hook:hooks?/hooks?\\.json|SessionStart"
+  "ui:dashboard|web/|spa|component"
+  "tests:bats|test suite|\\.bats"
+  "ci:workflow|\\.github/|GHA|github.actions"
+  "schema:schema|json.schema"
+)
+
+BODY=$(echo "$SUBJECT" | sed -E 's/^[a-z]+(\([^)]*\))?:\s*//')
+
+MATCHED=()
+for entry in "${SUBSYSTEMS[@]}"; do
+  NAME="${entry%%:*}"
+  PATTERN="${entry#*:}"
+  if echo "$BODY" | grep -qiE "$PATTERN"; then
+    MATCHED+=("$NAME")
+  fi
+done
+
+CONJUNCTIONS=$(echo "$BODY" | grep -coE '[a-zA-Z]{3,}\s\+\s[a-zA-Z]{3,}|[a-zA-Z]{3,}\s&\s[a-zA-Z]{3,}' || true)
+
+if [ "$CONJUNCTIONS" -gt 0 ] && [ "${#MATCHED[@]}" -ge 2 ]; then
+  echo "" >&2
+  echo "  commit-msg hook: multi-concern commit detected" >&2
+  echo "  Subject: $SUBJECT" >&2
+  echo "  Concerns: ${MATCHED[*]}" >&2
+  echo "  Split into separate commits (--no-verify to bypass)." >&2
+  exit 1
+fi
+
+if [ "${#MATCHED[@]}" -ge 3 ]; then
+  echo "" >&2
+  echo "  commit-msg hook: multi-concern commit detected" >&2
+  echo "  Subject: $SUBJECT" >&2
+  echo "  Concerns: ${MATCHED[*]}" >&2
+  echo "  Split into separate commits (--no-verify to bypass)." >&2
+  exit 1
+fi
+
+exit 0

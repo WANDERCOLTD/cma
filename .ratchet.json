@@ -1,0 +1,6 @@
+{
+  "shellcheck_warnings": null,
+  "bats_tests": 0,
+  "todo_fixme_count": 0,
+  "_note": "Baselines locked on first GHA green run via `bash scripts/check-ratchet.sh lock` on ubuntu-latest. Linux is canonical — macOS values may drift on shell-tool counts."
+}
