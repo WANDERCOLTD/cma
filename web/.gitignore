@@ -27,3 +27,4 @@ dist-ssr
 # Vite
 .vite/
 stats.html
+.vercel
