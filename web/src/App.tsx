@@ -1,6 +1,7 @@
 import * as React from "react";
 import { MergeDetailSheet } from "@/components/MergeDetailSheet";
 import { NavSheet } from "@/components/NavSheet";
+import { ProfileSheet } from "@/components/ProfileSheet";
 import { Queue } from "@/components/Queue";
 import { RecentMerges } from "@/components/RecentMerges";
 import {
@@ -24,6 +25,7 @@ import {
   formatResetTime,
   parseRepoFromUrl,
 } from "@/lib/github";
+import { usePersonalSettings } from "@/lib/personal-settings";
 import type { MergeRecord, RepoConfig, SignedInUser } from "@/types";
 
 const PUBLIC_MODE_ACK_KEY = "4wd-public-mode-ack";
@@ -58,17 +60,22 @@ export function App(): JSX.Element {
 
   const repoSlug = React.useMemo(() => parseRepoFromUrl(), [searchTick]);
 
+  // Personal preferences — drives `defaultRepoSlug` rehydration below.
+  const { settings: personal } = usePersonalSettings();
+  const defaultRepoSlug = personal.defaultRepoSlug;
+
   // Auto-rehydrate: if the user picked a repo earlier this session and we
-  // don't have one in the URL, jump straight to it. Saves a click.
+  // don't have one in the URL, jump straight to it. Falls back to the
+  // personal default repo when no session slug is stashed. Saves a click.
   React.useEffect(() => {
     if (repoSlug) return;
-    const stored = readStoredRepoSlug();
-    if (!stored) return;
+    const target = readStoredRepoSlug() ?? defaultRepoSlug;
+    if (!target) return;
     const url = new URL(window.location.href);
-    url.searchParams.set("repo", stored);
+    url.searchParams.set("repo", target);
     window.history.replaceState(null, "", url.toString());
     setSearchTick((n) => n + 1);
-  }, [repoSlug]);
+  }, [repoSlug, defaultRepoSlug]);
 
   // Track whether the user has explicitly chosen public mode. Distinct from
   // "no token in storage yet" — without an ack, we still show the setup screen.
@@ -92,6 +99,7 @@ export function App(): JSX.Element {
 
   const [navOpen, setNavOpen] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
+  const [profileOpen, setProfileOpen] = React.useState(false);
   const [detailMerge, setDetailMerge] = React.useState<MergeRecord | null>(
     null,
   );
@@ -243,6 +251,7 @@ export function App(): JSX.Element {
         user={viewer}
         onOpenNav={() => setNavOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
+        onOpenProfile={() => setProfileOpen(true)}
         onSignOut={signOut}
       />
 
@@ -306,6 +315,16 @@ export function App(): JSX.Element {
         repo={repo}
         open={detailOpen}
         onOpenChange={setDetailOpen}
+      />
+
+      <ProfileSheet
+        open={profileOpen}
+        onOpenChange={setProfileOpen}
+        user={viewer}
+        bio={viewerQuery.data?.bio ?? null}
+        htmlUrl={viewerQuery.data?.htmlUrl}
+        isPublicMode={isPublicMode}
+        onSignOut={signOut}
       />
 
       <Toaster />

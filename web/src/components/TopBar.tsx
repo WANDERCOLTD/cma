@@ -18,6 +18,7 @@ interface TopBarProps {
   user: SignedInUser;
   onOpenNav: () => void;
   onOpenSettings: () => void;
+  onOpenProfile: () => void;
   onSignOut: () => void;
 }
 
@@ -26,6 +27,7 @@ export function TopBar({
   user,
   onOpenNav,
   onOpenSettings,
+  onOpenProfile,
   onSignOut,
 }: TopBarProps): JSX.Element {
   const { theme, toggle } = useTheme();
@@ -103,7 +105,7 @@ export function TopBar({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={onOpenProfile}>
                 <UserCircle2 className="h-4 w-4" /> Profile
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={onOpenSettings}>

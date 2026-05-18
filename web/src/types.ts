@@ -53,3 +53,17 @@ export interface RepoConfig {
 export interface SignedInUser extends User {
   name: string;
 }
+
+/**
+ * A repo discovered via GitHub code-search for `.4wd.json`. The branch-protection
+ * flag is filled in lazily on hover/first-paint to keep the initial render cheap.
+ */
+export interface ConfiguredRepo {
+  owner: { login: string; avatarUrl: string };
+  name: string;
+  fullName: string;
+  description: string | null;
+  htmlUrl: string;
+  pushedAt: string | null;
+  branchProtectionEnabled?: boolean; // lazy-loaded
+}
