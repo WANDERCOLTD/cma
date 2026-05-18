@@ -1,5 +1,10 @@
 # cma — Claude Merge Agent
 
+[![ci](https://github.com/WANDERCOLTD/cma/actions/workflows/ci.yml/badge.svg)](https://github.com/WANDERCOLTD/cma/actions/workflows/ci.yml)
+[![release](https://img.shields.io/github/v/release/WANDERCOLTD/cma?label=release)](https://github.com/WANDERCOLTD/cma/releases)
+[![license](https://img.shields.io/github/license/WANDERCOLTD/cma)](./LICENSE)
+[![dashboard](https://img.shields.io/badge/dashboard-live-7c3aed)](https://cma-dashboard-eight.vercel.app)
+
 Serialised merge-to-main for Claude Code, with a project-configurable canonical gate. Pairs cleanly with GitHub Merge Queue — this plugin is the developer-experience layer on top.
 
 ## Why
