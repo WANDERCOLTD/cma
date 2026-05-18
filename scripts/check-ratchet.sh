@@ -7,10 +7,10 @@
 #   • emits a "lock the win" hint if any count drops below baseline
 #     (downward ratchet only via deliberate `lock` invocation)
 #
-# Metrics:
-#   shellcheck_warnings — sum of shellcheck issues across bin/ + lib/ + scripts/
-#   bats_tests          — count of `@test` lines across test/*.bats
-#   todo_fixme_count    — TODO/FIXME comments across bin/ + lib/ + commands/
+# Metrics measured:
+#   - "shellcheck_warnings": sum of issues across bin/ + lib/ + scripts/
+#   - "bats_tests": count of `@test` lines across test/*.bats
+#   - "todo_fixme_count": TODO/FIXME comments across bin/ + lib/ + commands/
 #
 # Notes:
 #   • Run lock on Linux (the GHA canonical platform) to set baseline. Mac and

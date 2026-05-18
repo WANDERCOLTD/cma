@@ -6,10 +6,16 @@
 #   config_load "$repo_root"     # sets CONFIG_* env vars, exits non-zero on error
 #
 # Required: jq on PATH.
+#
+# All CONFIG_* variables are read by sourcing callers (bin/merge.sh,
+# bin/merge-status.sh). The file-level disable below silences SC2034 for the
+# whole module since shellcheck only sees the assignments here, not the reads.
+
+# shellcheck disable=SC2034
 
 set -u
 
-# Defaults
+# Defaults — overridden by config_load.
 CONFIG_DISABLED="false"
 CONFIG_GATE_COMMAND=""
 CONFIG_GATE_RUN_ON="local"
