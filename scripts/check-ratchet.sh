@@ -64,7 +64,13 @@ measure_bats() {
     echo 0
     return
   fi
-  count=$(find "$REPO_ROOT/test" -name '*.bats' -type f -exec grep -hcE '^@test ' {} + 2>/dev/null \
+  # Exclude vendored bats-core/bats-assert/bats-support directories — they have
+  # their own .bats files (their own self-tests) that aren't cma tests.
+  count=$(find "$REPO_ROOT/test" -name '*.bats' -type f \
+    -not -path "$REPO_ROOT/test/bats-core/*" \
+    -not -path "$REPO_ROOT/test/bats-assert/*" \
+    -not -path "$REPO_ROOT/test/bats-support/*" \
+    -exec grep -hcE '^@test ' {} + 2>/dev/null \
     | awk '{s+=$1} END {print s+0}')
   echo "${count:-0}"
 }

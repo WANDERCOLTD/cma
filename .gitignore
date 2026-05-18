@@ -5,3 +5,16 @@
 node_modules/
 .idea/
 .vscode/
+
+# bats vendored at test/ during CI/local — never commit
+test/bats-core/
+test/bats-assert/
+test/bats-support/
+
+# web dashboard build outputs
+web/dist/
+web/.vite/
+
+# local-only data
+.merge-agent-data/
+
