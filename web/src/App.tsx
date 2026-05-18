@@ -4,26 +4,158 @@ import { NavSheet } from "@/components/NavSheet";
 import { Queue } from "@/components/Queue";
 import { RecentMerges } from "@/components/RecentMerges";
 import { SettingsSheet } from "@/components/SettingsSheet";
+import { SetupScreen } from "@/components/SetupScreen";
 import { Toaster } from "@/components/Toaster";
 import { TopBar } from "@/components/TopBar";
+import { Banner } from "@/components/Banner";
+import { Button } from "@/components/ui/button";
+import { useGitHubAuth } from "@/hooks/useGitHubAuth";
+import { useRecentMerges } from "@/hooks/useRecentMerges";
+import { useQueueState } from "@/hooks/useQueueState";
+import { useRepoConfig } from "@/hooks/useRepoConfig";
+import { useSignedInUser } from "@/hooks/useSignedInUser";
 import { useToast } from "@/hooks/use-toast";
 import {
-  queueItems as mockQueue,
-  recentMerges as mockMerges,
-  repoConfig as mockRepo,
-  signedInUser,
-} from "@/data/mock";
-import type { MergeRecord, RepoConfig } from "@/types";
+  classifyGitHubError,
+  formatResetTime,
+  parseRepoFromUrl,
+} from "@/lib/github";
+import type { MergeRecord, RepoConfig, SignedInUser } from "@/types";
+
+const PUBLIC_MODE_ACK_KEY = "cma-public-mode-ack";
+
+const FALLBACK_REPO: RepoConfig = {
+  owner: "",
+  name: "",
+  branchProtectionEnabled: false,
+  mergeQueueEnabled: false,
+  cmaDisabled: false,
+  cmaVersion: __CMA_DASHBOARD_VERSION__,
+};
+
+const FALLBACK_USER: SignedInUser = {
+  login: "guest",
+  name: "Public mode",
+  avatarUrl: "",
+};
 
 export function App(): JSX.Element {
-  const [repo, setRepo] = React.useState<RepoConfig>(mockRepo);
+  const { isPublicMode, signOut } = useGitHubAuth();
+  const { toast } = useToast();
+
+  const repoSlug = React.useMemo(() => parseRepoFromUrl(), []);
+
+  // Track whether the user has explicitly chosen public mode. Distinct from
+  // "no token in storage yet" — without an ack, we still show the setup screen.
+  const [publicAck, setPublicAck] = React.useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.sessionStorage.getItem(PUBLIC_MODE_ACK_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const acknowledgePublic = React.useCallback(() => {
+    try {
+      window.sessionStorage.setItem(PUBLIC_MODE_ACK_KEY, "1");
+    } catch {
+      // ignore
+    }
+    setPublicAck(true);
+  }, []);
+
   const [navOpen, setNavOpen] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [detailMerge, setDetailMerge] = React.useState<MergeRecord | null>(
     null,
   );
   const [detailOpen, setDetailOpen] = React.useState(false);
-  const { toast } = useToast();
+
+  // Setup gate: show until we have either a token or an explicit "public mode" ack.
+  const needsSetup = isPublicMode && !publicAck;
+
+  // Always declare hooks — they no-op when the inputs are empty.
+  const owner = repoSlug?.owner ?? "";
+  const name = repoSlug?.name ?? "";
+  const queryEnabled = !!repoSlug && !needsSetup;
+
+  const repoQuery = useRepoConfig({ owner, name });
+  const mergesQuery = useRecentMerges({ owner, name });
+  const queueQuery = useQueueState({ owner, name });
+  const viewerQuery = useSignedInUser();
+
+  // Surface GitHub errors as toasts, deduped per error code.
+  const lastErrorRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (!queryEnabled) return;
+    const errs = [
+      repoQuery.error,
+      mergesQuery.error,
+      queueQuery.error,
+      viewerQuery.error,
+    ];
+    for (const err of errs) {
+      if (!err) continue;
+      const info = classifyGitHubError(err);
+      if (!info) continue;
+      const key = `${info.status}:${info.rateLimited}:${info.missingScope}`;
+      if (lastErrorRef.current === key) continue;
+      lastErrorRef.current = key;
+      if (info.rateLimited) {
+        toast({
+          title: "Rate-limited by GitHub",
+          description: info.rateLimitReset
+            ? `Resets in ~${formatResetTime(info.rateLimitReset)}. ${
+                isPublicMode ? "Add a token to raise the limit." : ""
+              }`
+            : "Try again shortly.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (info.missingScope) {
+        toast({
+          title: "Token is missing required scope",
+          description: "Regenerate your PAT with `repo` (and `read:org` for private orgs).",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (info.status === 401) {
+        toast({
+          title: "Token invalid",
+          description: "Your GitHub token was rejected — sign out and re-enter.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (info.status === 404) {
+        toast({
+          title: "Repository not found",
+          description: `${owner}/${name} — check the spelling, or that your token has access.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      toast({
+        title: `GitHub error ${info.status}`,
+        description: info.message,
+        variant: "destructive",
+      });
+      return;
+    }
+  }, [
+    queryEnabled,
+    repoQuery.error,
+    mergesQuery.error,
+    queueQuery.error,
+    viewerQuery.error,
+    toast,
+    isPublicMode,
+    owner,
+    name,
+  ]);
 
   const handleSelectMerge = React.useCallback((m: MergeRecord) => {
     setDetailMerge(m);
@@ -31,46 +163,102 @@ export function App(): JSX.Element {
   }, []);
 
   const handleToggleKillSwitch = React.useCallback(() => {
-    setRepo((prev) => {
-      const next = { ...prev, cmaDisabled: !prev.cmaDisabled };
-      toast({
-        title: next.cmaDisabled ? "Kill switch enabled" : "Kill switch off",
-        description: next.cmaDisabled
-          ? "cma will refuse to merge until re-enabled."
-          : "cma is operational again.",
-        variant: next.cmaDisabled ? "destructive" : "default",
-      });
-      return next;
+    // TODO(v0.3.2): write back to .merge-agent.json via a hosted endpoint.
+    // The dashboard has no file-system access, so this remains a read-only
+    // surface for now.
+    toast({
+      title: "Kill switch is read-only in v0.3",
+      description:
+        "Edit .merge-agent.json in the repo and commit to toggle cma. Write-back lands in v0.3.2.",
     });
   }, [toast]);
 
-  const handleSignOut = React.useCallback(() => {
-    toast({
-      title: "Sign out (mock)",
-      description: "Real auth wiring lands in v0.3.1.",
-    });
-  }, [toast]);
+  // 1. No repo in URL — always show setup (which carries a "no repo" hint).
+  if (!repoSlug) {
+    return (
+      <>
+        <SetupScreen
+          repoSlug={null}
+          onContinuePublic={
+            isPublicMode && !publicAck ? acknowledgePublic : undefined
+          }
+        />
+        <Toaster />
+      </>
+    );
+  }
+
+  // 2. Repo is set but no token + no public ack — gate on setup.
+  if (needsSetup) {
+    return (
+      <>
+        <SetupScreen
+          repoSlug={`${repoSlug.owner}/${repoSlug.name}`}
+          onContinuePublic={acknowledgePublic}
+        />
+        <Toaster />
+      </>
+    );
+  }
+
+  const repo: RepoConfig = repoQuery.data ?? {
+    ...FALLBACK_REPO,
+    owner: repoSlug.owner,
+    name: repoSlug.name,
+  };
+  const merges = mergesQuery.data ?? [];
+  const queue = queueQuery.data ?? [];
+  const viewer = viewerQuery.data ?? FALLBACK_USER;
 
   return (
     <div className="min-h-screen">
       <TopBar
         repo={repo}
-        user={signedInUser}
+        user={viewer}
         onOpenNav={() => setNavOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
-        onSignOut={handleSignOut}
+        onSignOut={signOut}
       />
 
-      <main className="mx-auto max-w-6xl space-y-8 px-4 py-6 sm:px-6 sm:py-8">
-        <Queue items={mockQueue} />
-        <RecentMerges merges={mockMerges} onSelect={handleSelectMerge} />
+      <main className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+        {isPublicMode && (
+          <Banner
+            tone="warning"
+            title="Unauthenticated — rate-limited to 60 requests/hr."
+            action={
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  try {
+                    window.sessionStorage.removeItem(PUBLIC_MODE_ACK_KEY);
+                  } catch {
+                    // ignore
+                  }
+                  setPublicAck(false);
+                }}
+              >
+                Add token
+              </Button>
+            }
+          >
+            Add a GitHub PAT for full access and to read private repos.
+          </Banner>
+        )}
+
+        <Queue items={queue} loading={queueQuery.isLoading} />
+        <RecentMerges
+          merges={merges}
+          loading={mergesQuery.isLoading}
+          onSelect={handleSelectMerge}
+        />
       </main>
 
       <NavSheet
         open={navOpen}
         onOpenChange={setNavOpen}
         repo={repo}
-        recentMerges={mockMerges}
+        recentMerges={merges}
         onOpenSettings={() => {
           setNavOpen(false);
           setSettingsOpen(true);
@@ -83,6 +271,8 @@ export function App(): JSX.Element {
         onOpenChange={setSettingsOpen}
         repo={repo}
         onToggleKillSwitch={handleToggleKillSwitch}
+        onSignOut={signOut}
+        isPublicMode={isPublicMode}
       />
 
       <MergeDetailSheet

@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "@/App";
+import { GitHubAuthProvider } from "@/hooks/useGitHubAuth";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { ToastContextProvider } from "@/hooks/use-toast";
 import "@/index.css";
@@ -24,11 +25,13 @@ if (!rootEl) {
 ReactDOM.createRoot(rootEl).render(
   <React.StrictMode>
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <ToastContextProvider>
-          <App />
-        </ToastContextProvider>
-      </QueryClientProvider>
+      <GitHubAuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <ToastContextProvider>
+            <App />
+          </ToastContextProvider>
+        </QueryClientProvider>
+      </GitHubAuthProvider>
     </ThemeProvider>
   </React.StrictMode>,
 );

@@ -1,13 +1,27 @@
 # cma dashboard
 
-Web UI for **Claude Merge Agent** (cma) — v0.3 scaffold.
+Web UI for **Claude Merge Agent** (cma) — v0.3.1.
 
 A status + history dashboard for a configured GitHub repo's main-branch merges.
 The CLI plugin lives at the repo root (`bin/`, `commands/`, `hooks/`, `lib/`);
-this `web/` subdirectory is the dashboard companion shipping as v0.3.
+this `web/` subdirectory is the hosted dashboard companion.
 
-> Real GitHub API wiring (Octokit + `gh auth token` + polling) lands in v0.3.1.
-> This scaffold runs entirely off mock data in `src/data/mock.ts`.
+## Auth flow
+
+The dashboard is a Vercel-hosted SPA with no backend. GitHub auth is
+sessionStorage-only:
+
+1. **From `/cma:dashboard`** — `bin/dashboard.sh` discovers a token from
+   `gh auth token`, `GITHUB_TOKEN`, or `GH_TOKEN` and appends it as
+   `#token=<value>`. The dashboard consumes the hash on load, stashes the
+   token in `sessionStorage`, then rewrites the URL to remove it.
+2. **Manual paste** — visit the dashboard and paste a PAT into the setup
+   screen. Required scopes: `repo`, `read:org`.
+3. **Public mode** — no token; rate-limited to 60 req/hr against public
+   repos. A yellow banner surfaces this.
+
+Closing the tab drops the token. Sign-out clears `sessionStorage` and
+reloads.
 
 ---
 
@@ -67,8 +81,8 @@ Dark mode is the default. Toggle via the sun/moon icon in the top bar or the Set
 | Primitives | Radix UI (Dialog, DropdownMenu, Avatar, Toast, ScrollArea, Separator) |
 | Icons | lucide-react |
 | Motion | framer-motion |
-| Data fetching | @tanstack/react-query (configured, not yet used) |
-| GitHub client | @octokit/rest (installed, not yet used) |
+| Data fetching | @tanstack/react-query (polling, 15s queue / 60s merges) |
+| GitHub client | @octokit/rest (via sessionStorage PAT) |
 
 shadcn/ui primitives live in `src/components/ui/` — copy-in style, fully owned
 by this project. Extend or replace freely.
@@ -128,20 +142,26 @@ web/
     ├── main.tsx             ← React/Query/Theme/Toast providers
     ├── index.css            ← Tailwind + design tokens + .glass utility
     ├── types.ts             ← MergeRecord / QueueItem / RepoConfig
-    ├── data/
-    │   └── mock.ts          ← 20 merges, 3 queue items, repo config
     ├── lib/
-    │   └── utils.ts         ← cn() + formatRelative / formatDuration
+    │   ├── utils.ts         ← cn() + formatRelative / formatDuration
+    │   └── github.ts        ← Octokit factory + error classifier
     ├── hooks/
     │   ├── use-theme.tsx
-    │   └── use-toast.tsx
+    │   ├── use-toast.tsx
+    │   ├── useGitHubAuth.tsx    ← sessionStorage token + URL hash consumer
+    │   ├── useRecentMerges.ts   ← commits on main + PR/check enrichment
+    │   ├── useQueueState.ts     ← open PRs in the merge queue
+    │   ├── useRepoConfig.ts     ← branch protection + cma toggles
+    │   └── useSignedInUser.ts   ← /user (auth mode only)
     ├── components/
     │   ├── TopBar.tsx
     │   ├── Queue.tsx
     │   ├── RecentMerges.tsx
     │   ├── MergeDetailSheet.tsx
     │   ├── SettingsSheet.tsx
+    │   ├── SetupScreen.tsx
     │   ├── NavSheet.tsx
+    │   ├── Banner.tsx
     │   ├── StatusChip.tsx
     │   ├── Toaster.tsx
     │   └── ui/              ← shadcn primitives (button, card, sheet, ...)
@@ -150,25 +170,25 @@ web/
 
 ---
 
-## What's mocked vs. what's real
+## What's live vs. still TODO
 
 | Concern | State |
 |---|---|
-| Queue items + recent merges | **Mocked** — `src/data/mock.ts` |
-| User identity / sign-in | **Mocked** — `signedInUser` |
-| `.merge-agent.json` view | **Mocked** — synthesised JSON in `SettingsSheet` |
-| Kill-switch toggle | **Local state only** — no GitHub write yet |
-| Ratchet delta | **Mocked** — `MergeRecord.ratchetDelta` |
-| Gate log | **Mocked** — `MergeRecord.gateLog` |
-| GitHub deep-links (PR / commit) | **Real URLs** — open in a new tab |
+| Queue items + recent merges | **Live** — Octokit (`/commits`, `/pulls`) |
+| User identity | **Live** — `GET /user` when authenticated |
+| Branch protection / merge queue | **Live** — branch protection API |
+| Kill-switch toggle | **Read-only stub** — no FS write from a browser |
+| `.merge-agent.json` view | **Stub** — deep-link to GitHub |
+| Ratchet delta | **Hidden** — `MergeRecord.ratchetDelta` undefined |
+| Gate log | **Hidden** — cma writes locally; not reachable |
+| Gate seconds | **Approximated** — longest check-run on the merge commit |
 
-### Coming in v0.3.1
+### Coming in v0.3.2
 
-- Octokit-backed live data via `gh auth token`.
-- Polling for the queue (every 15s).
-- Real `.merge-agent.json` read via the Contents API.
-- Sign-in via GitHub OAuth device flow.
-- `/cma:dashboard` slash command to open this UI from inside Claude Code.
+- Hosted log endpoint so ratchet delta and gate log can be surfaced.
+- Write-back to `.merge-agent.json` (kill switch toggle).
+- Real-time updates (SSE).
+- GitHub OAuth device flow (no PAT paste).
 - Vitest harness for components and hooks.
 
 ---

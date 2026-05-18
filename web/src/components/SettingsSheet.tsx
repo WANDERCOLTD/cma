@@ -1,4 +1,4 @@
-import { ExternalLink, Github, Moon, Sun } from "lucide-react";
+import { ExternalLink, Github, LogOut, Moon, Shield, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,6 +18,8 @@ interface SettingsSheetProps {
   onOpenChange: (open: boolean) => void;
   repo: RepoConfig;
   onToggleKillSwitch: () => void;
+  onSignOut: () => void;
+  isPublicMode: boolean;
 }
 
 export function SettingsSheet({
@@ -25,23 +27,13 @@ export function SettingsSheet({
   onOpenChange,
   repo,
   onToggleKillSwitch,
+  onSignOut,
+  isPublicMode,
 }: SettingsSheetProps): JSX.Element {
   const { theme, toggle } = useTheme();
 
-  const configJson = JSON.stringify(
-    {
-      disabled: repo.cmaDisabled,
-      ratchet: ".ratchet.json",
-      gate: {
-        command: "npm run gate",
-        timeoutMinutes: 30,
-      },
-      branchProtection: repo.branchProtectionEnabled,
-      mergeQueue: repo.mergeQueueEnabled,
-    },
-    null,
-    2,
-  );
+  const repoSlug = `${repo.owner}/${repo.name}`;
+  const ghBranchesUrl = `https://github.com/${repoSlug}/settings/branches`;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -49,12 +41,40 @@ export function SettingsSheet({
         <SheetHeader>
           <SheetTitle>Settings</SheetTitle>
           <SheetDescription>
-            Configuration for {repo.owner}/{repo.name}
+            Configuration for {repoSlug}
           </SheetDescription>
         </SheetHeader>
 
         <ScrollArea className="flex-1">
           <div className="space-y-6 p-6">
+            <Section title="Authentication">
+              <Row
+                label="Mode"
+                value={
+                  isPublicMode ? (
+                    <Badge variant="idle">public (rate-limited)</Badge>
+                  ) : (
+                    <Badge variant="merged">authenticated</Badge>
+                  )
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Tokens live in sessionStorage — closing the tab signs you out.
+              </p>
+              <div className="pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onSignOut}
+                >
+                  <LogOut className="h-4 w-4" />
+                  {isPublicMode ? "Add / change token" : "Sign out"}
+                </Button>
+              </div>
+            </Section>
+
+            <Separator />
+
             <Section title="Repository">
               <Row label="Owner" value={repo.owner} />
               <Row label="Name" value={repo.name} />
@@ -79,6 +99,18 @@ export function SettingsSheet({
                   )
                 }
               />
+              <div className="pt-2">
+                <Button asChild variant="outline" size="sm">
+                  <a
+                    href={ghBranchesUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Shield className="h-4 w-4" /> Branch protection
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </Button>
+              </div>
             </Section>
 
             <Separator />
@@ -87,9 +119,9 @@ export function SettingsSheet({
               <p className="text-sm text-muted-foreground">
                 When enabled, cma will refuse to merge anything until manually
                 re-enabled. Equivalent to setting{" "}
-                <code className="font-mono text-xs">CMA_DISABLE=1</code> or{" "}
-                <code className="font-mono text-xs">.merge-agent.json</code>{" "}
-                disabled flag.
+                <code className="font-mono text-xs">CMA_DISABLE=1</code> or the{" "}
+                <code className="font-mono text-xs">disabled</code> flag in{" "}
+                <code className="font-mono text-xs">.merge-agent.json</code>.
               </p>
               <div className="flex items-center justify-between rounded-lg border border-border/60 p-3">
                 <div>
@@ -107,10 +139,16 @@ export function SettingsSheet({
                   variant={repo.cmaDisabled ? "destructive" : "outline"}
                   size="sm"
                   onClick={onToggleKillSwitch}
+                  title="Read-only in v0.3 — toggling defers to v0.3.2"
                 >
                   {repo.cmaDisabled ? "Re-enable" : "Disable"}
                 </Button>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Read-only in v0.3 — write-back to{" "}
+                <code className="font-mono">.merge-agent.json</code> lands in
+                v0.3.2.
+              </p>
             </Section>
 
             <Separator />
@@ -139,26 +177,14 @@ export function SettingsSheet({
 
             <Separator />
 
-            <Section title=".merge-agent.json">
-              <pre className="max-h-72 overflow-auto rounded-lg border border-border/60 bg-black/30 p-3 text-[11px] leading-relaxed font-mono text-muted-foreground">
-                {configJson}
-              </pre>
-              <p className="text-xs text-muted-foreground">
-                Read from repo root. Edit in the repository and commit to
-                update.
-              </p>
-            </Section>
-
-            <Separator />
-
             <div className="flex flex-wrap gap-2">
               <Button asChild variant="outline" size="sm">
                 <a
-                  href={`https://github.com/${repo.owner}/${repo.name}/blob/main/.merge-agent.json`}
+                  href={`https://github.com/${repoSlug}/blob/main/.merge-agent.json`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Github className="h-4 w-4" /> View on GitHub
+                  <Github className="h-4 w-4" /> View .merge-agent.json
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </Button>

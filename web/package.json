@@ -1,7 +1,7 @@
 {
   "name": "cma-web",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "description": "Claude Merge Agent dashboard — status + history UI for a configured GitHub repo's main-branch merges.",
   "scripts": {

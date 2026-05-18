@@ -162,7 +162,7 @@ export function NavSheet({
         <div className="border-t border-border/60 p-4">
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Activity className="h-3 w-3" />
-            Polling every 15s · mock data
+            Queue every 15s · merges every 60s
           </p>
         </div>
       </SheetContent>
